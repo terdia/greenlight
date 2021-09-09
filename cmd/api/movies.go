@@ -1,12 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/terdia/greenlight/internal/data"
 )
 
 func (app *application) createMovieHandler(rw http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(rw, "create a new movie")
+	err := app.writeJson(rw, http.StatusOK, responseData{"status": "success", "message": "create a new movie"}, nil)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(rw, "Server cannot process your request", http.StatusInternalServerError)
+
+		return
+	}
 }
 
 func (app *application) showMovieHandler(rw http.ResponseWriter, r *http.Request) {
@@ -17,5 +25,25 @@ func (app *application) showMovieHandler(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fmt.Fprintf(rw, "show details of movie %d\n", id)
+	result := responseData{
+		"status": "success",
+		"data": map[string]data.Movie{
+			"movie": {
+				ID:        id,
+				Title:     "Casablanca",
+				Runtime:   102,
+				Genres:    []string{"drama", "romance", "war"},
+				Version:   1,
+				CreatedAt: time.Now(),
+			},
+		},
+	}
+
+	err = app.writeJson(rw, http.StatusOK, result, nil)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(rw, "Server cannot process your request", http.StatusInternalServerError)
+
+		return
+	}
 }
