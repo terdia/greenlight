@@ -2,13 +2,15 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/terdia/greenlight/internal/custom_type"
 )
 
 func (app *application) healthcheckHandler(rw http.ResponseWriter, r *http.Request) {
 
-	data := responseData{
-		"status": "success",
-		"data": map[string]map[string]string{
+	data := responseObject{
+		StatusMsg: custom_type.Success,
+		Data: map[string]map[string]string{
 			"system_info": {
 				"environment": app.config.env,
 				"version":     version,
@@ -18,9 +20,6 @@ func (app *application) healthcheckHandler(rw http.ResponseWriter, r *http.Reque
 
 	err := app.writeJson(rw, http.StatusOK, data, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(rw, "Server cannot process your request", http.StatusInternalServerError)
-
-		return
+		app.serverErrorResponse(rw, r, err)
 	}
 }

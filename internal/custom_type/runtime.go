@@ -1,4 +1,4 @@
-package data
+package custom_type
 
 import (
 	"fmt"
