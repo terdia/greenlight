@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/terdia/greenlight/internal/custom_type"
 )
 
 func (app *application) logError(r *http.Request, err error) {
@@ -29,5 +31,20 @@ func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.
 	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
 	app.errorResponse(w, r, http.StatusMethodNotAllowed, responseObject{
 		Message: message,
+	})
+}
+
+func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusBadRequest, responseObject{
+		Message: err.Error(),
+	})
+}
+
+func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, responseObject{
+		StatusMsg: custom_type.Fail,
+		Data: map[string]map[string]string{
+			"errors": errors,
+		},
 	})
 }
