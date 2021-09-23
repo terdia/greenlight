@@ -1,21 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/terdia/greenlight/internal/custom_type"
 	"github.com/terdia/greenlight/internal/data"
-	"github.com/terdia/greenlight/internal/validator"
 )
 
 func (app *application) createMovieHandler(rw http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Title   string              `json:"title"`
-		Year    int32               `json:"year"`
-		Runtime custom_type.Runtime `json:"runtime"`
-		Genres  []string            `json:"genres"`
-	}
+	var input data.CreateMovieRequest
 
 	err := app.readJson(rw, r, &input)
 	if err != nil {
@@ -31,10 +26,14 @@ func (app *application) createMovieHandler(rw http.ResponseWriter, r *http.Reque
 		Genres:  input.Genres,
 	}
 
-	v := validator.New()
+	validationErrors, err := app.services.MovieService.Create(movie)
+	if validationErrors != nil {
+		app.failedValidationResponse(rw, r, validationErrors)
 
-	if movie.Validate(v); !v.Valid() {
-		app.failedValidationResponse(rw, r, v.Errors)
+		return
+	}
+	if err != nil {
+		app.serverErrorResponse(rw, r, err)
 
 		return
 	}
@@ -46,7 +45,10 @@ func (app *application) createMovieHandler(rw http.ResponseWriter, r *http.Reque
 		},
 	}
 
-	err = app.writeJson(rw, http.StatusOK, result, nil)
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
+
+	err = app.writeJson(rw, http.StatusCreated, result, headers)
 	if err != nil {
 		app.serverErrorResponse(rw, r, err)
 

@@ -3,6 +3,8 @@ package repository
 import (
 	"database/sql"
 
+	"github.com/lib/pq"
+
 	"github.com/terdia/greenlight/internal/data"
 )
 
@@ -22,7 +24,13 @@ func NewMovieRepoitory(db *sql.DB) *movieRepository {
 }
 
 func (repo *movieRepository) Insert(movie *data.Movie) error {
-	return nil
+	query := `INSERT INTO movies (title, year, runtime, genres)
+			 VALUES($1, $2, $3, $4)
+			 RETURNING id, created_at, version`
+
+	queryParams := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
+
+	return repo.DB.QueryRow(query, queryParams...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
 func (repo *movieRepository) Get(id int64) (*data.Movie, error) {
