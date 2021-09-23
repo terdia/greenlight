@@ -1,0 +1,37 @@
+version: "3"
+services:
+  greenlight:
+    container_name: greenlight
+    restart: unless-stopped
+    build: .
+    volumes:
+      - .:/go/src/greenlight
+    ports:
+        - "4000:4000"
+    labels:
+      traefik.http.routers.app.rule: Host(`greenlight.docker.local`)
+      traefik.http.routers.app.tls: true
+      traefik.enable: true
+    networks: 
+        - terdia-proxy
+    environment: 
+        GREENLIGHT_DB_DSN: ${GREENLIGHT_DB_DSN}
+
+  # migrate:
+  #     image: migrate/migrate
+  #     labels:
+  #       traefik.enable: false
+  #     networks:
+  #         - terdia-proxy
+  #     volumes:
+  #         - ./migrations:/migrations
+  #     command: -path=/migrations/ -database "postgres://greenlight:password@postgres/greenlight?sslmode=disable" up 2
+
+networks: 
+    terdia-proxy:
+        external: true
+
+
+# docker run -v "$(pwd)/migrations":/migrations --network terdia-proxy migrate/migrate -path=/migrations/ -database=$GREENLIGHT_DB_DSN up
+# docker run -v "$(pwd)/migrations":/migrations --network terdia-proxy migrate/migrate -path=/migrations/ -database=$GREENLIGHT_DB_DSN version
+#docker run -v "$(pwd)/migrations":/migrations migrate/migrate create -seq -ext=.sql -dir=/migrations create_movies_table
