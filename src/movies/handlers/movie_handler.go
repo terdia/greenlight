@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/commons"
@@ -60,8 +59,15 @@ func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request
 
 	result := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
-		Data: map[string]entities.Movie{
-			"movie": *movie,
+		Data: map[string]dto.MovieResponse{
+			"movie": {
+				ID:      movie.ID,
+				Title:   movie.Title,
+				Year:    movie.Year,
+				Runtime: movie.Runtime,
+				Genres:  movie.Genres,
+				Version: movie.Version,
+			},
 		},
 	}
 
@@ -87,14 +93,13 @@ func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) 
 
 	result := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
-		Data: map[string]entities.Movie{
+		Data: map[string]dto.MovieResponse{
 			"movie": {
-				ID:        custom_type.ID(id),
-				Title:     "Casablanca",
-				Runtime:   102,
-				Genres:    []string{"drama", "romance", "war"},
-				Version:   1,
-				CreatedAt: time.Now(),
+				ID:      custom_type.ID(id),
+				Title:   "Casablanca",
+				Runtime: 102,
+				Genres:  []string{"drama", "romance", "war"},
+				Version: 1,
 			},
 		},
 	}
