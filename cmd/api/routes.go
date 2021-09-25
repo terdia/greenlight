@@ -22,6 +22,8 @@ func (app *application) routes() http.Handler {
 
 	router.Post("/v1/movies", movieHandler.CreateMovie)
 	router.Get("/v1/movies/{id}", movieHandler.ShowMovie)
+	router.Put("/v1/movies/{id}", movieHandler.UpdateMovie)
+	router.Delete("/v1/movies/{id}", movieHandler.DeleteMovie)
 
 	return router
 }

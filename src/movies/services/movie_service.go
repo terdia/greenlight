@@ -13,7 +13,7 @@ type CreateMovieValidationErrors map[string]string
 type MovieService interface {
 	Create(movie *entities.Movie) (CreateMovieValidationErrors, error)
 	GetById(id int64) (*entities.Movie, error)
-	Update(movie *entities.Movie) error
+	Update(movie *entities.Movie) (CreateMovieValidationErrors, error)
 	Delete(id int64) error
 }
 
@@ -39,8 +39,15 @@ func (srv *movieService) GetById(id int64) (*entities.Movie, error) {
 	return srv.repo.Get(id)
 }
 
-func (srv *movieService) Update(movie *entities.Movie) error {
-	return srv.repo.Update(movie)
+func (srv *movieService) Update(movie *entities.Movie) (CreateMovieValidationErrors, error) {
+
+	v := validator.New()
+
+	if validateCreateMovie(v, movie); !v.Valid() {
+		return v.Errors, nil
+	}
+
+	return nil, srv.repo.Update(movie)
 }
 
 func (srv *movieService) Delete(id int64) error {
