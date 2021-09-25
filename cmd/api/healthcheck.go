@@ -3,23 +3,26 @@ package main
 import (
 	"net/http"
 
+	"github.com/terdia/greenlight/internal/commons"
 	"github.com/terdia/greenlight/internal/custom_type"
 )
 
 func (app *application) healthcheckHandler(rw http.ResponseWriter, r *http.Request) {
 
-	data := responseObject{
+	data := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
 		Data: map[string]map[string]string{
 			"system_info": {
-				"environment": app.config.env,
-				"version":     version,
+				"environment": app.config.Env,
+				"version":     app.config.Version,
 			},
 		},
 	}
 
-	err := app.writeJson(rw, http.StatusOK, data, nil)
+	utils := app.registry.Services.SharedUtil
+
+	err := utils.WriteJson(rw, http.StatusOK, data, nil)
 	if err != nil {
-		app.serverErrorResponse(rw, r, err)
+		utils.ServerErrorResponse(rw, r, err)
 	}
 }

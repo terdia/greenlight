@@ -4,18 +4,25 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/terdia/greenlight/src/movies/handlers"
 )
 
 func (app *application) routes() http.Handler {
 
 	router := chi.NewRouter()
 
-	router.NotFound(app.notFoundResponse)
-	router.MethodNotAllowed(app.methodNotAllowedResponse)
+	utils := app.registry.Services.SharedUtil
+
+	router.NotFound(utils.NotFoundResponse)
+	router.MethodNotAllowed(utils.MethodNotAllowedResponse)
 
 	router.Get("/v1/healthcheck", app.healthcheckHandler)
-	router.Post("/v1/movies", app.createMovieHandler)
-	router.Get("/v1/movies/{id}", app.showMovieHandler)
+
+	movieHandler := handlers.NewMovieHandler(utils, app.registry.Services.MovieService)
+
+	router.Post("/v1/movies", movieHandler.CreateMovie)
+	router.Get("/v1/movies/{id}", movieHandler.ShowMovie)
 
 	return router
 }

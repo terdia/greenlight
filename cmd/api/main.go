@@ -1,54 +1,31 @@
 package main
 
 import (
-	"context"
-	"database/sql"
-	"flag"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"time"
 
 	_ "github.com/lib/pq"
 
-	"github.com/terdia/greenlight/internal/service"
+	"github.com/terdia/greenlight/config"
+	"github.com/terdia/greenlight/infrastructures/logger"
+	"github.com/terdia/greenlight/infrastructures/persistence/postgres"
+	"github.com/terdia/greenlight/infrastructures/persistence/postgres/repository"
+	"github.com/terdia/greenlight/internal/commons"
+	"github.com/terdia/greenlight/internal/registry"
+	"github.com/terdia/greenlight/src/movies/services"
 )
 
-const version = "1.0.0"
-
-type config struct {
-	port int
-	env  string
-	db   struct {
-		dsn          string
-		maxOpenConns int
-		maxIdleConns int
-		maxIdleTime  string
-	}
-}
-
 type application struct {
-	config   config
-	logger   log.Logger
-	services service.Services
+	config   *config.Config
+	registry registry.Registry
 }
 
 func main() {
-	var cfg config
+	cfg := config.Get()
+	logger := logger.NewLogger().Logger
 
-	flag.IntVar(&cfg.port, "port", 4000, "Api server")
-	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
-	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
-	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
-	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
-	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
-
-	flag.Parse()
-
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-
-	db, err := opneDb(cfg)
+	db, err := postgres.OpenDb(cfg.Db)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -56,49 +33,25 @@ func main() {
 	defer db.Close()
 	logger.Printf("database connection pool established")
 
+	services := registry.NewServices(
+		services.NewMovieService(repository.NewMovieRepoitory(db)),
+		commons.NewUtil(logger),
+	)
+
 	app := &application{
 		config:   cfg,
-		logger:   *logger,
-		services: service.NewServices(db),
+		registry: registry.NewRegistry(db, services),
 	}
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.config.port),
+		Addr:         fmt.Sprintf(":%d", cfg.AppPort),
 		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	app.logger.Printf("starting %s server on %s", app.config.env, srv.Addr)
+	logger.Printf("starting %s server on %s", cfg.Env, srv.Addr)
 	err = srv.ListenAndServe()
-	app.logger.Fatal(err)
-}
-
-func opneDb(cgf config) (*sql.DB, error) {
-
-	db, err := sql.Open("postgres", cgf.db.dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	db.SetMaxOpenConns(cgf.db.maxOpenConns)
-	db.SetMaxIdleConns(cgf.db.maxIdleConns)
-
-	maxIdleTime, err := time.ParseDuration(cgf.db.maxIdleTime)
-	if err != nil {
-		return nil, err
-	}
-	db.SetConnMaxIdleTime(maxIdleTime)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	//if connection is not established within 5 seconds return erro
-	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	logger.Fatal(err)
 }

@@ -1,31 +1,31 @@
-package service
+package services
 
 import (
 	"time"
 
-	"github.com/terdia/greenlight/internal/data"
-	"github.com/terdia/greenlight/internal/repository"
 	"github.com/terdia/greenlight/internal/validator"
+	"github.com/terdia/greenlight/src/movies/entities"
+	"github.com/terdia/greenlight/src/movies/repositories"
 )
 
 type CreateMovieValidationErrors map[string]string
 
-type MovieServiceInterface interface {
-	Create(movie *data.Movie) (CreateMovieValidationErrors, error)
-	GetById(id int64) (*data.Movie, error)
-	Update(movie *data.Movie) error
+type MovieService interface {
+	Create(movie *entities.Movie) (CreateMovieValidationErrors, error)
+	GetById(id int64) (*entities.Movie, error)
+	Update(movie *entities.Movie) error
 	Delete(id int64) error
 }
 
 type movieService struct {
-	repo repository.MovieRepositoryInterface
+	repo repositories.MovieRepository
 }
 
-func NewMovieService(repo repository.MovieRepositoryInterface) *movieService {
+func NewMovieService(repo repositories.MovieRepository) *movieService {
 	return &movieService{repo: repo}
 }
 
-func (srv *movieService) Create(movie *data.Movie) (CreateMovieValidationErrors, error) {
+func (srv *movieService) Create(movie *entities.Movie) (CreateMovieValidationErrors, error) {
 	v := validator.New()
 
 	if validateCreateMovie(v, movie); !v.Valid() {
@@ -35,11 +35,11 @@ func (srv *movieService) Create(movie *data.Movie) (CreateMovieValidationErrors,
 	return nil, srv.repo.Insert(movie)
 }
 
-func (srv *movieService) GetById(id int64) (*data.Movie, error) {
+func (srv *movieService) GetById(id int64) (*entities.Movie, error) {
 	return srv.repo.Get(id)
 }
 
-func (srv *movieService) Update(movie *data.Movie) error {
+func (srv *movieService) Update(movie *entities.Movie) error {
 	return srv.repo.Update(movie)
 }
 
@@ -47,7 +47,7 @@ func (srv *movieService) Delete(id int64) error {
 	return srv.repo.Delete(id)
 }
 
-func validateCreateMovie(v *validator.Validator, movie *data.Movie) {
+func validateCreateMovie(v *validator.Validator, movie *entities.Movie) {
 
 	v.Check(movie.Title != "", "title", "must be provided")
 	v.Check(len(movie.Title) <= 500, "title", "must not be more than 500 bytes long")
