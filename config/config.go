@@ -40,6 +40,6 @@ func init() {
 
 }
 
-func Get() *Config {
+func NewConfig() *Config {
 	return &cfg
 }

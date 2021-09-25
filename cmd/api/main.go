@@ -19,7 +19,7 @@ type application struct {
 }
 
 func main() {
-	cfg := config.Get()
+	cfg := config.NewConfig()
 	logger := logger.NewLogger().Logger
 
 	db, err := postgres.OpenDb(cfg.Db)
