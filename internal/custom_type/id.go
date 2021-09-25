@@ -11,22 +11,9 @@ var ErrInvalidIDFormat = errors.New("invalid ID format")
 
 type ID int64
 
-func NewIdHasher() (*hashids.HashID, error) {
-	hd := hashids.NewData()
-	hd.Salt = "salt is a salt salt"
-	hd.MinLength = 30
-
-	return hashids.NewWithData(hd)
-}
-
 func (id ID) MarshalJSON() ([]byte, error) {
 
-	hashId, err := NewIdHasher()
-	if err != nil {
-		panic(err)
-	}
-
-	encodedId, err := hashId.Encode([]int{int(id)})
+	encodedId, err := EncodeId(int(id))
 	if err != nil {
 		return nil, ErrInvalidIDFormat
 	}
@@ -43,12 +30,7 @@ func (id *ID) UnmarshalJSON(jsonValue []byte) error {
 		return ErrInvalidIDFormat
 	}
 
-	hashId, err := NewIdHasher()
-	if err != nil {
-		panic(err)
-	}
-
-	decodedId, err := hashId.DecodeWithError(unQuotedJSONValue)
+	decodedId, err := DecodeId(unQuotedJSONValue)
 	if err != nil {
 		return ErrInvalidIDFormat
 	}
@@ -59,4 +41,30 @@ func (id *ID) UnmarshalJSON(jsonValue []byte) error {
 	*id = ID(decodedId[0])
 
 	return nil
+}
+
+func newIdHasher() (*hashids.HashID, error) {
+	hd := hashids.NewData()
+	hd.Salt = "salt is a salt salt"
+	hd.MinLength = 30
+
+	return hashids.NewWithData(hd)
+}
+
+func EncodeId(id int) (string, error) {
+	hashId, err := newIdHasher()
+	if err != nil {
+		panic(err)
+	}
+
+	return hashId.Encode([]int{int(id)})
+}
+
+func DecodeId(id string) ([]int, error) {
+	hashId, err := newIdHasher()
+	if err != nil {
+		panic(err)
+	}
+
+	return hashId.DecodeWithError(id)
 }

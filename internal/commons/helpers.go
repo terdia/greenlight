@@ -16,19 +16,11 @@ func (util *sharedUtils) ExtractIdParamFromContext(r *http.Request) (int64, erro
 		return 0, errors.New("invalid parameter")
 	}
 
-	hashId, err := custom_type.NewIdHasher()
-	if err != nil {
-		panic(err)
-	}
-
-	decodedId, err := hashId.DecodeWithError(stringId)
+	decodedId, err := custom_type.DecodeId(stringId)
 	if err != nil {
 		return 0, errors.New("invalid Id")
 	}
 
-	// Convert the int32 to a ID type and assign this to the receiver. Note that we
-	// use the * operator to deference the receiver (which is a pointer to a ID
-	// type) in order to set the underlying value of the pointer.
 	return int64(decodedId[0]), nil
 
 }
