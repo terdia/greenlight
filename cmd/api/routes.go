@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-
-	"github.com/terdia/greenlight/src/movies/handlers"
 )
 
 func (app *application) routes() http.Handler {
@@ -19,7 +17,8 @@ func (app *application) routes() http.Handler {
 
 	router.Get("/v1/healthcheck", app.healthcheckHandler)
 
-	movieHandler := handlers.NewMovieHandler(utils, app.registry.Services.MovieService)
+	//Domain routes
+	movieHandler := app.registry.Handlers.MovieHandler
 
 	router.Post("/v1/movies", movieHandler.CreateMovie)
 	router.Get("/v1/movies/{id}", movieHandler.ShowMovie)
