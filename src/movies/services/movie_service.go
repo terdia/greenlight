@@ -3,6 +3,7 @@ package services
 import (
 	"time"
 
+	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/validator"
 	"github.com/terdia/greenlight/src/movies/entities"
 	"github.com/terdia/greenlight/src/movies/repositories"
@@ -13,7 +14,7 @@ type CreateMovieValidationErrors map[string]string
 type MovieService interface {
 	Create(movie *entities.Movie) (CreateMovieValidationErrors, error)
 	GetById(id int64) (*entities.Movie, error)
-	Update(movie *entities.Movie) (CreateMovieValidationErrors, error)
+	Update(id int64, request dto.MovieRequest) (*entities.Movie, CreateMovieValidationErrors, error)
 	Delete(id int64) error
 }
 
@@ -28,7 +29,7 @@ func NewMovieService(repo repositories.MovieRepository) *movieService {
 func (srv *movieService) Create(movie *entities.Movie) (CreateMovieValidationErrors, error) {
 	v := validator.New()
 
-	if validateCreateMovie(v, movie); !v.Valid() {
+	if validateMovie(v, movie); !v.Valid() {
 		return v.Errors, nil
 	}
 
@@ -39,22 +40,43 @@ func (srv *movieService) GetById(id int64) (*entities.Movie, error) {
 	return srv.repo.Get(id)
 }
 
-func (srv *movieService) Update(movie *entities.Movie) (CreateMovieValidationErrors, error) {
+func (srv *movieService) Update(id int64, request dto.MovieRequest) (*entities.Movie, CreateMovieValidationErrors, error) {
+
+	movie, err := srv.GetById(id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if request.Title != nil {
+		movie.Title = *request.Title
+	}
+
+	if request.Year != nil {
+		movie.Year = *request.Year
+	}
+
+	if request.Runtime != nil {
+		movie.Runtime = *request.Runtime
+	}
+
+	if request.Genres != nil {
+		movie.Genres = request.Genres
+	}
 
 	v := validator.New()
 
-	if validateCreateMovie(v, movie); !v.Valid() {
-		return v.Errors, nil
+	if validateMovie(v, movie); !v.Valid() {
+		return nil, v.Errors, nil
 	}
 
-	return nil, srv.repo.Update(movie)
+	return movie, nil, srv.repo.Update(movie)
 }
 
 func (srv *movieService) Delete(id int64) error {
 	return srv.repo.Delete(id)
 }
 
-func validateCreateMovie(v *validator.Validator, movie *entities.Movie) {
+func validateMovie(v *validator.Validator, movie *entities.Movie) {
 
 	v.Check(movie.Title != "", "title", "must be provided")
 	v.Check(len(movie.Title) <= 500, "title", "must not be more than 500 bytes long")

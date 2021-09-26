@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/lib/pq"
 
@@ -25,7 +27,11 @@ func (repo *movieRepository) Insert(movie *entities.Movie) error {
 
 	queryParams := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
 
-	return repo.DB.QueryRow(query, queryParams...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	return repo.DB.QueryRowContext(ctx, query, queryParams...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
 func (repo *movieRepository) Get(id int64) (*entities.Movie, error) {
@@ -40,7 +46,11 @@ func (repo *movieRepository) Get(id int64) (*entities.Movie, error) {
 
 	var movie entities.Movie
 
-	err := repo.DB.QueryRow(query, id).Scan(
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := repo.DB.QueryRowContext(ctx, query, id).Scan(
 		&movie.ID,
 		&movie.CreatedAt,
 		&movie.Title,
@@ -63,15 +73,35 @@ func (repo *movieRepository) Get(id int64) (*entities.Movie, error) {
 }
 
 func (repo *movieRepository) Update(movie *entities.Movie) error {
+	// To enable Optimistic Concurrency Control (data race condition during edit)
+	//add version to where clause, to ensure first routine to send update request is persisted and  other routine
+	// receive edit error
 	query := `
 			UPDATE movies
 			SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
-			WHERE id = $5
+			WHERE id = $5 AND version = $6
 			RETURNING version`
 
-	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.ID}
+	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.ID, movie.Version}
 
-	return repo.DB.QueryRow(query, args...).Scan(&movie.Version)
+	// Execute the SQL query. If no matching row could be found, we know the movie
+	// version has changed (or the record has been deleted) and we return our custom
+	// ErrEditConflict error.
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := repo.DB.QueryRowContext(ctx, query, args...).Scan(&movie.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return data.ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (repo *movieRepository) Delete(id int64) error {
@@ -81,7 +111,11 @@ func (repo *movieRepository) Delete(id int64) error {
 
 	query := `DELETE FROM movies WHERE id = $1`
 
-	result, err := repo.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := repo.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

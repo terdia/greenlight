@@ -33,7 +33,7 @@ func NewMovieHandler(util commons.SharedUtil, service services.MovieService) *mo
 }
 
 func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request) {
-	var input dto.CreateMovieRequest
+	var input dto.MovieRequest
 
 	err := handler.sharedUtil.ReadJson(rw, r, &input)
 	if err != nil {
@@ -43,9 +43,9 @@ func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request
 	}
 
 	movie := &entities.Movie{
-		Title:   input.Title,
-		Year:    input.Year,
-		Runtime: input.Runtime,
+		Title:   *input.Title,
+		Year:    *input.Year,
+		Runtime: *input.Runtime,
 		Genres:  input.Genres,
 	}
 
@@ -113,6 +113,7 @@ func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) 
 			"movie": {
 				ID:      movie.ID,
 				Title:   movie.Title,
+				Year:    movie.Year,
 				Runtime: movie.Runtime,
 				Genres:  movie.Genres,
 				Version: movie.Version,
@@ -137,18 +138,7 @@ func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	movie, err := handler.service.GetById(id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			handler.sharedUtil.NotFoundResponse(rw, r)
-		default:
-			handler.sharedUtil.ServerErrorResponse(rw, r, err)
-		}
-		return
-	}
-
-	var input dto.CreateMovieRequest
+	var input dto.MovieRequest
 	err = handler.sharedUtil.ReadJson(rw, r, &input)
 	if err != nil {
 		handler.sharedUtil.BadRequestResponse(rw, r, err)
@@ -156,19 +146,21 @@ func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	movie.Title = input.Title
-	movie.Year = input.Year
-	movie.Runtime = input.Runtime
-	movie.Genres = input.Genres
-
-	validationErrors, err := handler.service.Update(movie)
-	if validationErrors != nil {
-		handler.sharedUtil.FailedValidationResponse(rw, r, validationErrors)
-
+	movie, validationErrors, err := handler.service.Update(id, input)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			handler.sharedUtil.NotFoundResponse(rw, r)
+		case errors.Is(err, data.ErrEditConflict):
+			handler.sharedUtil.EditConflictResponse(rw, r)
+		default:
+			handler.sharedUtil.ServerErrorResponse(rw, r, err)
+		}
 		return
 	}
-	if err != nil {
-		handler.sharedUtil.ServerErrorResponse(rw, r, err)
+
+	if validationErrors != nil {
+		handler.sharedUtil.FailedValidationResponse(rw, r, validationErrors)
 
 		return
 	}
@@ -179,6 +171,7 @@ func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request
 			"movie": {
 				ID:      movie.ID,
 				Title:   movie.Title,
+				Year:    movie.Year,
 				Runtime: movie.Runtime,
 				Genres:  movie.Genres,
 				Version: movie.Version,

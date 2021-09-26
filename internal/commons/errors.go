@@ -48,3 +48,9 @@ func (util *sharedUtils) FailedValidationResponse(w http.ResponseWriter, r *http
 		},
 	})
 }
+
+func (util *sharedUtils) EditConflictResponse(w http.ResponseWriter, r *http.Request) {
+	util.ErrorResponse(w, r, http.StatusConflict, ResponseObject{
+		Message: "unable to update the record due to an edit conflict, please try again",
+	})
+}

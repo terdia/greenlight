@@ -11,6 +11,7 @@ type SharedUtil interface {
 	LogError(r *http.Request, err error)
 	ServerErrorResponse(rw http.ResponseWriter, r *http.Request, err error)
 	NotFoundResponse(rw http.ResponseWriter, r *http.Request)
+	EditConflictResponse(rw http.ResponseWriter, r *http.Request)
 	MethodNotAllowedResponse(w http.ResponseWriter, r *http.Request)
 	BadRequestResponse(w http.ResponseWriter, r *http.Request, err error)
 	FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string)
