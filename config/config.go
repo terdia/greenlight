@@ -8,7 +8,6 @@ import (
 const version = "1.0.0"
 
 var cfg Config
-var db Db
 
 type Config struct {
 	AppPort int
@@ -25,6 +24,8 @@ type Db struct {
 }
 
 func init() {
+
+	var db Db
 	cfg.Version = version
 
 	flag.IntVar(&cfg.AppPort, "port", 4000, "Api server")

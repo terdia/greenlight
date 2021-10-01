@@ -25,7 +25,7 @@ type movieHandler struct {
 	service    services.MovieService
 }
 
-func NewMovieHandler(util commons.SharedUtil, service services.MovieService) *movieHandler {
+func NewMovieHandler(util commons.SharedUtil, service services.MovieService) MovieHandle {
 	return &movieHandler{
 		sharedUtil: util,
 		service:    service,

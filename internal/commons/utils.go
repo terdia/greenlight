@@ -25,7 +25,7 @@ type sharedUtils struct {
 	logger *log.Logger
 }
 
-func NewUtil(log *log.Logger) *sharedUtils {
+func NewUtil(log *log.Logger) SharedUtil {
 	return &sharedUtils{logger: log}
 }
 

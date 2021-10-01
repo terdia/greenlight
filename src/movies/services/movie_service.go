@@ -22,7 +22,7 @@ type movieService struct {
 	repo repositories.MovieRepository
 }
 
-func NewMovieService(repo repositories.MovieRepository) *movieService {
+func NewMovieService(repo repositories.MovieRepository) MovieService {
 	return &movieService{repo: repo}
 }
 

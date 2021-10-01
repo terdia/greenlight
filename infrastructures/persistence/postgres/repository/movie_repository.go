@@ -10,13 +10,14 @@ import (
 
 	"github.com/terdia/greenlight/internal/data"
 	"github.com/terdia/greenlight/src/movies/entities"
+	"github.com/terdia/greenlight/src/movies/repositories"
 )
 
 type movieRepository struct {
 	sql.DB
 }
 
-func NewMovieRepoitory(db *sql.DB) *movieRepository {
+func NewMovieRepoitory(db *sql.DB) repositories.MovieRepository {
 	return &movieRepository{*db}
 }
 
