@@ -20,8 +20,9 @@ func (app *application) routes() http.Handler {
 	//Domain routes
 	movieHandler := app.registry.Handlers.MovieHandler
 
-	router.Post("/v1/movies", movieHandler.CreateMovie)
+	router.Get("/v1/movies", movieHandler.ListMovie)
 	router.Get("/v1/movies/{id}", movieHandler.ShowMovie)
+	router.Post("/v1/movies", movieHandler.CreateMovie)
 	router.Patch("/v1/movies/{id}", movieHandler.UpdateMovie)
 	router.Delete("/v1/movies/{id}", movieHandler.DeleteMovie)
 

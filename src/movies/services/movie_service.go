@@ -16,6 +16,7 @@ type MovieService interface {
 	GetById(id int64) (*entities.Movie, error)
 	Update(id int64, request dto.MovieRequest) (*entities.Movie, CreateMovieValidationErrors, error)
 	Delete(id int64) error
+	List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, error)
 }
 
 type movieService struct {
@@ -74,6 +75,10 @@ func (srv *movieService) Update(id int64, request dto.MovieRequest) (*entities.M
 
 func (srv *movieService) Delete(id int64) error {
 	return srv.repo.Delete(id)
+}
+
+func (srv *movieService) List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, error) {
+	return srv.repo.GetAll(listMovieRequest)
 }
 
 func validateMovie(v *validator.Validator, movie *entities.Movie) {

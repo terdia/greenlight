@@ -9,6 +9,7 @@ import (
 	"github.com/terdia/greenlight/internal/commons"
 	"github.com/terdia/greenlight/internal/custom_type"
 	"github.com/terdia/greenlight/internal/data"
+	"github.com/terdia/greenlight/internal/validator"
 	"github.com/terdia/greenlight/src/movies/entities"
 	"github.com/terdia/greenlight/src/movies/services"
 )
@@ -18,6 +19,7 @@ type MovieHandle interface {
 	ShowMovie(rw http.ResponseWriter, r *http.Request)
 	UpdateMovie(rw http.ResponseWriter, r *http.Request)
 	DeleteMovie(rw http.ResponseWriter, r *http.Request)
+	ListMovie(rw http.ResponseWriter, r *http.Request)
 }
 
 type movieHandler struct {
@@ -210,6 +212,64 @@ func (handler *movieHandler) DeleteMovie(rw http.ResponseWriter, r *http.Request
 	result := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
 		Message:   "movie successfully deleted",
+	}
+
+	err = handler.sharedUtil.WriteJson(rw, http.StatusOK, result, nil)
+	if err != nil {
+		handler.sharedUtil.ServerErrorResponse(rw, r, err)
+
+		return
+	}
+}
+
+func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) {
+	util := handler.sharedUtil
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	filters := dto.Filters{
+		Page:         util.ReadInt(qs, "page", 1, v),
+		PageSize:     util.ReadInt(qs, "page_size", 1, v),
+		Sort:         util.ReadString(qs, "sort", "id"),
+		SortSafelist: []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"},
+	}
+
+	filters.ValidateFilters(v)
+	if !v.Valid() {
+		util.FailedValidationResponse(rw, r, v.Errors)
+		return
+	}
+
+	listMoviesRequest := dto.ListMovieRequest{
+		Title:   util.ReadString(qs, "title", ""),
+		Genres:  util.ReadCSV(qs, "genres", []string{}),
+		Filters: filters,
+	}
+
+	movies, err := handler.service.List(listMoviesRequest)
+	if err != nil {
+		util.ServerErrorResponse(rw, r, err)
+		return
+	}
+
+	moviesDto := []dto.MovieResponse{}
+	for _, movie := range movies {
+		moviesDto = append(moviesDto, dto.MovieResponse{
+			ID:      movie.ID,
+			Title:   movie.Title,
+			Year:    movie.Year,
+			Runtime: movie.Runtime,
+			Genres:  movie.Genres,
+			Version: movie.Version,
+		})
+	}
+
+	result := commons.ResponseObject{
+		StatusMsg: custom_type.Success,
+		Data: map[string][]dto.MovieResponse{
+			"movies": moviesDto,
+		},
 	}
 
 	err = handler.sharedUtil.WriteJson(rw, http.StatusOK, result, nil)

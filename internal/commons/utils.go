@@ -3,8 +3,10 @@ package commons
 import (
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/terdia/greenlight/internal/custom_type"
+	"github.com/terdia/greenlight/internal/validator"
 )
 
 type SharedUtil interface {
@@ -19,6 +21,9 @@ type SharedUtil interface {
 	ReadJson(rw http.ResponseWriter, r *http.Request, dst interface{}) error
 	ErrorResponse(rw http.ResponseWriter, r *http.Request, status int, envelop ResponseObject)
 	ExtractIdParamFromContext(r *http.Request) (int64, error)
+	ReadString(qs url.Values, key, defaultValue string) string
+	ReadInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int
+	ReadCSV(qs url.Values, key string, defaultValue []string) []string
 }
 
 type sharedUtils struct {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/lib/pq"
 
+	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/data"
 	"github.com/terdia/greenlight/src/movies/entities"
 	"github.com/terdia/greenlight/src/movies/repositories"
@@ -131,4 +132,44 @@ func (repo *movieRepository) Delete(id int64) error {
 	}
 
 	return nil
+}
+
+func (repo *movieRepository) GetAll(dto.ListMovieRequest) ([]*entities.Movie, error) {
+
+	query := `
+			SELECT id, created_at, title, year, runtime, genres, version
+			FROM movies
+			ORDER BY id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := repo.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	movies := []*entities.Movie{}
+
+	for rows.Next() {
+		var movie entities.Movie
+
+		err := rows.Scan(
+			&movie.ID,
+			&movie.CreatedAt,
+			&movie.Title,
+			&movie.Year,
+			&movie.Runtime,
+			pq.Array(&movie.Genres),
+			&movie.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, &movie)
+	}
+
+	return movies, nil
 }
