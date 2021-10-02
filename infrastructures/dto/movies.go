@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/terdia/greenlight/internal/custom_type"
+	"github.com/terdia/greenlight/internal/data"
 )
 
 type MovieRequest struct {
@@ -23,5 +24,5 @@ type MovieResponse struct {
 type ListMovieRequest struct {
 	Title   string
 	Genres  []string
-	Filters Filters
+	Filters data.Filters
 }

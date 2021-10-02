@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -134,17 +135,22 @@ func (repo *movieRepository) Delete(id int64) error {
 	return nil
 }
 
-func (repo *movieRepository) GetAll(dto.ListMovieRequest) ([]*entities.Movie, error) {
+func (repo *movieRepository) GetAll(r dto.ListMovieRequest) ([]*entities.Movie, error) {
 
-	query := `
+	filters := r.Filters
+	//WHERE (LOWER(title) = LOWER($1) OR $1 = '')
+	//WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '') full text search
+	query := fmt.Sprintf(`
 			SELECT id, created_at, title, year, runtime, genres, version
 			FROM movies
-			ORDER BY id`
+			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
+			AND (genres @> $2 OR $2 = '{}')
+			ORDER BY %s %s, id ASC`, filters.SortColumn(), filters.SortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := repo.DB.QueryContext(ctx, query)
+	rows, err := repo.DB.QueryContext(ctx, query, r.Title, pq.Array(r.Genres))
 	if err != nil {
 		return nil, err
 	}

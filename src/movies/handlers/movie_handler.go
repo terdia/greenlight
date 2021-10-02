@@ -228,7 +228,7 @@ func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) 
 
 	qs := r.URL.Query()
 
-	filters := dto.Filters{
+	filters := data.Filters{
 		Page:         util.ReadInt(qs, "page", 1, v),
 		PageSize:     util.ReadInt(qs, "page_size", 1, v),
 		Sort:         util.ReadString(qs, "sort", "id"),
