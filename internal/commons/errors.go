@@ -8,7 +8,10 @@ import (
 )
 
 func (util *sharedUtils) LogError(r *http.Request, err error) {
-	util.logger.Println(err)
+	util.logger.PrintError(err, map[string]string{
+		"request_method": r.Method,
+		"request_url":    r.URL.String(),
+	})
 }
 
 func (util *sharedUtils) ServerErrorResponse(rw http.ResponseWriter, r *http.Request, err error) {

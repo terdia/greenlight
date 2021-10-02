@@ -10,12 +10,12 @@ import (
 	"github.com/terdia/greenlight/src/movies/repositories"
 )
 
-type CreateMovieValidationErrors map[string]string
+type MovieValidationErrors map[string]string
 
 type MovieService interface {
-	Create(movie *entities.Movie) (CreateMovieValidationErrors, error)
+	Create(movie *entities.Movie) (MovieValidationErrors, error)
 	GetById(id int64) (*entities.Movie, error)
-	Update(id int64, request dto.MovieRequest) (*entities.Movie, CreateMovieValidationErrors, error)
+	Update(id int64, request dto.MovieRequest) (*entities.Movie, MovieValidationErrors, error)
 	Delete(id int64) error
 	List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, data.Metadata, error)
 }
@@ -28,7 +28,7 @@ func NewMovieService(repo repositories.MovieRepository) MovieService {
 	return &movieService{repo: repo}
 }
 
-func (srv *movieService) Create(movie *entities.Movie) (CreateMovieValidationErrors, error) {
+func (srv *movieService) Create(movie *entities.Movie) (MovieValidationErrors, error) {
 	v := validator.New()
 
 	if validateMovie(v, movie); !v.Valid() {
@@ -42,7 +42,7 @@ func (srv *movieService) GetById(id int64) (*entities.Movie, error) {
 	return srv.repo.Get(id)
 }
 
-func (srv *movieService) Update(id int64, request dto.MovieRequest) (*entities.Movie, CreateMovieValidationErrors, error) {
+func (srv *movieService) Update(id int64, request dto.MovieRequest) (*entities.Movie, MovieValidationErrors, error) {
 
 	movie, err := srv.GetById(id)
 	if err != nil {

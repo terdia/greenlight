@@ -2,8 +2,8 @@ package registry
 
 import (
 	"database/sql"
-	"log"
 
+	"github.com/terdia/greenlight/infrastructures/logger"
 	"github.com/terdia/greenlight/infrastructures/persistence/postgres/repository"
 	"github.com/terdia/greenlight/internal/commons"
 	"github.com/terdia/greenlight/src/movies/handlers"
@@ -23,7 +23,7 @@ type Handlers struct {
 	MovieHandler handlers.MovieHandle
 }
 
-func NewRegistry(db *sql.DB, logger *log.Logger) Registry {
+func NewRegistry(db *sql.DB, logger *logger.Logger) Registry {
 
 	utils := commons.NewUtil(logger)
 	movieService := services.NewMovieService(repository.NewMovieRepoitory(db))

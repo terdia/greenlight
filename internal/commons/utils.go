@@ -1,10 +1,10 @@
 package commons
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 
+	"github.com/terdia/greenlight/infrastructures/logger"
 	"github.com/terdia/greenlight/internal/custom_type"
 	"github.com/terdia/greenlight/internal/validator"
 )
@@ -27,10 +27,10 @@ type SharedUtil interface {
 }
 
 type sharedUtils struct {
-	logger *log.Logger
+	logger *logger.Logger
 }
 
-func NewUtil(log *log.Logger) SharedUtil {
+func NewUtil(log *logger.Logger) SharedUtil {
 	return &sharedUtils{logger: log}
 }
 
