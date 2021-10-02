@@ -1,6 +1,10 @@
-package dto
+package data
 
-import "github.com/terdia/greenlight/internal/validator"
+import (
+	"strings"
+
+	"github.com/terdia/greenlight/internal/validator"
+)
 
 type Filters struct {
 	Page         int
@@ -18,4 +22,21 @@ func (f *Filters) ValidateFilters(v *validator.Validator) {
 
 	// Check that the sort parameter matches a value in the safelist.
 	v.Check(validator.In(f.Sort, f.SortSafelist...), "sort", "invalid sort value")
+}
+
+func (f Filters) SortColumn() string {
+	for _, safeValue := range f.SortSafelist {
+		if f.Sort == safeValue {
+			return strings.TrimPrefix(f.Sort, "-")
+		}
+	}
+	panic("unsafe sort paramater: " + f.Sort)
+}
+
+func (f Filters) SortDirection() string {
+	if strings.HasPrefix(f.Sort, "-") {
+		return "DESC"
+	}
+
+	return "ASC"
 }
