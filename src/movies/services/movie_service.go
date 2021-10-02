@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/terdia/greenlight/infrastructures/dto"
+	"github.com/terdia/greenlight/internal/data"
 	"github.com/terdia/greenlight/internal/validator"
 	"github.com/terdia/greenlight/src/movies/entities"
 	"github.com/terdia/greenlight/src/movies/repositories"
@@ -16,7 +17,7 @@ type MovieService interface {
 	GetById(id int64) (*entities.Movie, error)
 	Update(id int64, request dto.MovieRequest) (*entities.Movie, CreateMovieValidationErrors, error)
 	Delete(id int64) error
-	List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, error)
+	List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, data.Metadata, error)
 }
 
 type movieService struct {
@@ -77,7 +78,7 @@ func (srv *movieService) Delete(id int64) error {
 	return srv.repo.Delete(id)
 }
 
-func (srv *movieService) List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, error) {
+func (srv *movieService) List(listMovieRequest dto.ListMovieRequest) ([]*entities.Movie, data.Metadata, error) {
 	return srv.repo.GetAll(listMovieRequest)
 }
 

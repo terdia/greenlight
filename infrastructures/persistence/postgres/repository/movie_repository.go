@@ -135,32 +135,35 @@ func (repo *movieRepository) Delete(id int64) error {
 	return nil
 }
 
-func (repo *movieRepository) GetAll(r dto.ListMovieRequest) ([]*entities.Movie, error) {
+func (repo *movieRepository) GetAll(r dto.ListMovieRequest) ([]*entities.Movie, data.Metadata, error) {
 
 	filters := r.Filters
-	//WHERE (LOWER(title) = LOWER($1) OR $1 = '')
-	//WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '') full text search
 	query := fmt.Sprintf(`
-			SELECT id, created_at, title, year, runtime, genres, version
+			SELECT count(*) OVER(), id, created_at, title, year, runtime, genres, version
 			FROM movies
 			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 			AND (genres @> $2 OR $2 = '{}')
-			ORDER BY %s %s, id ASC`, filters.SortColumn(), filters.SortDirection())
+			ORDER BY %s %s, id ASC 
+			LIMIT $3 OFFSET $4`, filters.SortColumn(), filters.SortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := repo.DB.QueryContext(ctx, query, r.Title, pq.Array(r.Genres))
+	args := []interface{}{r.Title, pq.Array(r.Genres), filters.Limit(), filters.Offset()}
+
+	rows, err := repo.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, data.Metadata{}, err
 	}
 
+	totalRecords := 0
 	movies := []*entities.Movie{}
 
 	for rows.Next() {
 		var movie entities.Movie
 
 		err := rows.Scan(
+			&totalRecords,
 			&movie.ID,
 			&movie.CreatedAt,
 			&movie.Title,
@@ -171,11 +174,13 @@ func (repo *movieRepository) GetAll(r dto.ListMovieRequest) ([]*entities.Movie, 
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, data.Metadata{}, err
 		}
 
 		movies = append(movies, &movie)
 	}
 
-	return movies, nil
+	metadata := data.CalculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return movies, metadata, nil
 }

@@ -230,7 +230,7 @@ func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) 
 
 	filters := data.Filters{
 		Page:         util.ReadInt(qs, "page", 1, v),
-		PageSize:     util.ReadInt(qs, "page_size", 1, v),
+		PageSize:     util.ReadInt(qs, "page_size", 10, v),
 		Sort:         util.ReadString(qs, "sort", "id"),
 		SortSafelist: []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"},
 	}
@@ -247,7 +247,7 @@ func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) 
 		Filters: filters,
 	}
 
-	movies, err := handler.service.List(listMoviesRequest)
+	movies, metadata, err := handler.service.List(listMoviesRequest)
 	if err != nil {
 		util.ServerErrorResponse(rw, r, err)
 		return
@@ -265,14 +265,14 @@ func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) 
 		})
 	}
 
-	result := commons.ResponseObject{
+	err = handler.sharedUtil.WriteJson(rw, http.StatusOK, commons.ResponseObject{
 		StatusMsg: custom_type.Success,
-		Data: map[string][]dto.MovieResponse{
-			"movies": moviesDto,
+		Data: dto.ListMovieResponse{
+			Metadata: metadata,
+			Movies:   moviesDto,
 		},
-	}
+	}, nil)
 
-	err = handler.sharedUtil.WriteJson(rw, http.StatusOK, result, nil)
 	if err != nil {
 		handler.sharedUtil.ServerErrorResponse(rw, r, err)
 

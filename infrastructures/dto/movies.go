@@ -26,3 +26,8 @@ type ListMovieRequest struct {
 	Genres  []string
 	Filters data.Filters
 }
+
+type ListMovieResponse struct {
+	Metadata data.Metadata   `json:"metadata"`
+	Movies   []MovieResponse `json:"movies"`
+}
