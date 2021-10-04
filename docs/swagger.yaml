@@ -71,23 +71,23 @@ paths:
       description: get all movies
       parameters:
       - description: full text search by movie title
-        in: path
+        in: query
         name: title
         type: string
       - description: command seperated list e.g. crime,drama
-        in: path
+        in: query
         name: genres
         type: string
       - default: 1
         description: page number
-        in: path
+        in: query
         maximum: 10000000
         minimum: 1
         name: page
         type: integer
       - default: 10
         description: page size
-        in: path
+        in: query
         maximum: 100
         minimum: 1
         name: page_size
@@ -103,7 +103,7 @@ paths:
         - -title
         - -year
         - -runtime
-        in: path
+        in: query
         name: sort
         type: string
       responses:

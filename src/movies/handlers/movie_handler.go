@@ -249,11 +249,11 @@ func (handler *movieHandler) DeleteMovie(rw http.ResponseWriter, r *http.Request
 // @Summary Get all movies
 // @Description get all movies
 // @Tags Movies
-// @Param title path string false "full text search by movie title"
-// @Param genres path string false "command seperated list e.g. crime,drama"
-// @Param page path integer false "page number"  default(1) minimum(1) maximum(10000000)
-// @Param page_size path integer false "page size" default(10) minimum(1) maximum(100)
-// @Param sort path string false "add - to sort in descing order" Enums(id, title, year, runtime, -id, -title, -year, -runtime) default(id)
+// @Param title query string false "full text search by movie title"
+// @Param genres query string false "command seperated list e.g. crime,drama"
+// @Param page query integer false "page number"  default(1) minimum(1) maximum(10000000)
+// @Param page_size query integer false "page size" default(10) minimum(1) maximum(100)
+// @Param sort query string false "add - to sort in descing order" Enums(id, title, year, runtime, -id, -title, -year, -runtime) default(id)
 // @Success 200 {object} commons.ResponseObject{data=dto.ListMovieResponse}
 // @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
 // @Failure 500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"

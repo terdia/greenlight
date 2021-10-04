@@ -35,13 +35,13 @@ var doc = `{
                         "type": "string",
                         "description": "full text search by movie title",
                         "name": "title",
-                        "in": "path"
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "command seperated list e.g. crime,drama",
                         "name": "genres",
-                        "in": "path"
+                        "in": "query"
                     },
                     {
                         "maximum": 10000000,
@@ -50,7 +50,7 @@ var doc = `{
                         "default": 1,
                         "description": "page number",
                         "name": "page",
-                        "in": "path"
+                        "in": "query"
                     },
                     {
                         "maximum": 100,
@@ -59,7 +59,7 @@ var doc = `{
                         "default": 10,
                         "description": "page size",
                         "name": "page_size",
-                        "in": "path"
+                        "in": "query"
                     },
                     {
                         "enum": [
@@ -76,7 +76,7 @@ var doc = `{
                         "default": "id",
                         "description": "add - to sort in descing order",
                         "name": "sort",
-                        "in": "path"
+                        "in": "query"
                     }
                 ],
                 "responses": {
