@@ -1,0 +1,509 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Greenlight API documentation",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "host": "localhost:4000",
+    "basePath": "/v1",
+    "paths": {
+        "/movies": {
+            "get": {
+                "description": "get all movies",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Get all movies",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "full text search by movie title",
+                        "name": "title",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "command seperated list e.g. crime,drama",
+                        "name": "genres",
+                        "in": "path"
+                    },
+                    {
+                        "maximum": 10000000,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "page",
+                        "in": "path"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "page size",
+                        "name": "page_size",
+                        "in": "path"
+                    },
+                    {
+                        "enum": [
+                            "id",
+                            "title",
+                            "year",
+                            "runtime",
+                            "-id",
+                            "-title",
+                            "-year",
+                            "-runtime"
+                        ],
+                        "type": "string",
+                        "default": "id",
+                        "description": "add - to sort in descing order",
+                        "name": "sort",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ListMovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "422": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a new movie with given details",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Create new movie",
+                "parameters": [
+                    {
+                        "description": "Title for the movie, max length 500",
+                        "name": "title",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    },
+                    {
+                        "description": "Published year e.g. 2021, must not be in the future",
+                        "name": "year",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    },
+                    {
+                        "description": "Runtime e.g 98 mins",
+                        "name": "runtime",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    },
+                    {
+                        "description": "Unique genres e.g action,adventure... maximum 5 genres",
+                        "name": "genres",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SingleMovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Location": {
+                                "type": "string",
+                                "description": "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "422": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/movies/{id}": {
+            "get": {
+                "description": "show details of a given movie",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Show movie details by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of the movie to show",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SingleMovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete a given movie by Id",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Delete a given movie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of the movie to delete",
+                        "name": "id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "404": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "update movie with given details",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Update a given movie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of the movie to update",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Title for the movie, max length 500",
+                        "name": "title",
+                        "in": "body",
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    },
+                    {
+                        "description": "Published year e.g. 2021, must not be in the future",
+                        "name": "year",
+                        "in": "body",
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    },
+                    {
+                        "description": "Runtime e.g 98 mins",
+                        "name": "runtime",
+                        "in": "body",
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    },
+                    {
+                        "description": "Unique genres e.g action,adventure... maximum 5 genres",
+                        "name": "genres",
+                        "in": "body",
+                        "schema": {
+                            "type": "primitive"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SingleMovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Location": {
+                                "type": "string",
+                                "description": "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "404": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "409": {
+                        "description": "e.g. status: error, message: unable to update the record due to an edit conflict, please try again",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "422": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "commons.ResponseObject": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "(success|fail|error)",
+                    "type": "integer"
+                }
+            }
+        },
+        "data.Metadata": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "first_page": {
+                    "type": "integer"
+                },
+                "last_page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_records": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ListMovieResponse": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/data.Metadata"
+                },
+                "movies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.MovieResponse"
+                    }
+                }
+            }
+        },
+        "dto.MovieResponse": {
+            "type": "object",
+            "properties": {
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "runtime": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SingleMovieResponse": {
+            "type": "object",
+            "properties": {
+                "movie": {
+                    "$ref": "#/definitions/dto.MovieResponse"
+                }
+            }
+        },
+        "dto.ValidationError": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/custom_type"
 )
 
@@ -46,8 +47,8 @@ func (util *sharedUtils) BadRequestResponse(w http.ResponseWriter, r *http.Reque
 func (util *sharedUtils) FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
 	util.ErrorResponse(w, r, http.StatusUnprocessableEntity, ResponseObject{
 		StatusMsg: custom_type.Fail,
-		Data: map[string]map[string]string{
-			"errors": errors,
+		Data: dto.ValidationError{
+			Errors: errors,
 		},
 	})
 }

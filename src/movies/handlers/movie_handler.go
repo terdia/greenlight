@@ -34,6 +34,19 @@ func NewMovieHandler(util commons.SharedUtil, service services.MovieService) Mov
 	}
 }
 
+// CreateMovie ... Create movie
+// @Summary Create new movie
+// @Description create a new movie with given details
+// @Tags Movies
+// @Param title body string true "Title for the movie, max length 500"
+// @Param year body integer true "Published year e.g. 2021, must not be in the future"
+// @Param runtime body string true "Runtime e.g 98 mins"
+// @Param genres body string true "Unique genres e.g action,adventure... maximum 5 genres"
+// @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
+// @Header 200 {string} Location "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
+// @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
+// @Failure 400,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Router /movies [post]
 func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request) {
 	var input dto.MovieRequest
 
@@ -65,15 +78,8 @@ func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request
 
 	result := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
-		Data: map[string]dto.MovieResponse{
-			"movie": {
-				ID:      movie.ID,
-				Title:   movie.Title,
-				Year:    movie.Year,
-				Runtime: movie.Runtime,
-				Genres:  movie.Genres,
-				Version: movie.Version,
-			},
+		Data: dto.SingleMovieResponse{
+			Movie: getMovieResponse(movie),
 		},
 	}
 
@@ -89,6 +95,14 @@ func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request
 	}
 }
 
+// ShowMovie ... Show movie
+// @Summary Show movie details by id
+// @Description show details of a given movie
+// @Tags Movies
+// @Param id path string false "Id of the movie to show"
+// @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
+// @Failure 404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Router /movies/{id} [get]
 func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) {
 
 	id, err := handler.sharedUtil.ExtractIdParamFromContext(r)
@@ -111,15 +125,8 @@ func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) 
 
 	result := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
-		Data: map[string]dto.MovieResponse{
-			"movie": {
-				ID:      movie.ID,
-				Title:   movie.Title,
-				Year:    movie.Year,
-				Runtime: movie.Runtime,
-				Genres:  movie.Genres,
-				Version: movie.Version,
-			},
+		Data: dto.SingleMovieResponse{
+			Movie: getMovieResponse(movie),
 		},
 	}
 
@@ -131,6 +138,21 @@ func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// UpdateMovie ... Update movie
+// @Summary Update a given movie
+// @Description update movie with given details
+// @Tags Movies
+// @Param id path string true "Id of the movie to update"
+// @Param title body string false "Title for the movie, max length 500"
+// @Param year body integer false "Published year e.g. 2021, must not be in the future"
+// @Param runtime body string false "Runtime e.g 98 mins"
+// @Param genres body string false "Unique genres e.g action,adventure... maximum 5 genres"
+// @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
+// @Header 200 {string} Location "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
+// @Failure 409 {object} commons.ResponseObject "e.g. status: error, message: unable to update the record due to an edit conflict, please try again"
+// @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
+// @Failure 400,404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Router /movies/{id} [patch]
 func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request) {
 
 	id, err := handler.sharedUtil.ExtractIdParamFromContext(r)
@@ -169,15 +191,8 @@ func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request
 
 	result := commons.ResponseObject{
 		StatusMsg: custom_type.Success,
-		Data: map[string]dto.MovieResponse{
-			"movie": {
-				ID:      movie.ID,
-				Title:   movie.Title,
-				Year:    movie.Year,
-				Runtime: movie.Runtime,
-				Genres:  movie.Genres,
-				Version: movie.Version,
-			},
+		Data: dto.SingleMovieResponse{
+			Movie: getMovieResponse(movie),
 		},
 	}
 
@@ -189,6 +204,14 @@ func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request
 	}
 }
 
+// DeleteMovie ... Delete a given movie
+// @Summary Delete a given movie
+// @Description delete a given movie by Id
+// @Tags Movies
+// @Param id path string false "Id of the movie to delete"
+// @Success 200 {object} commons.ResponseObject
+// @Failure 404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Router /movies/{id} [delete]
 func (handler *movieHandler) DeleteMovie(rw http.ResponseWriter, r *http.Request) {
 
 	id, err := handler.sharedUtil.ExtractIdParamFromContext(r)
@@ -222,6 +245,19 @@ func (handler *movieHandler) DeleteMovie(rw http.ResponseWriter, r *http.Request
 	}
 }
 
+// ListMovie ... Get all movies
+// @Summary Get all movies
+// @Description get all movies
+// @Tags Movies
+// @Param title path string false "full text search by movie title"
+// @Param genres path string false "command seperated list e.g. crime,drama"
+// @Param page path integer false "page number"  default(1) minimum(1) maximum(10000000)
+// @Param page_size path integer false "page size" default(10) minimum(1) maximum(100)
+// @Param sort path string false "add - to sort in descing order" Enums(id, title, year, runtime, -id, -title, -year, -runtime) default(id)
+// @Success 200 {object} commons.ResponseObject{data=dto.ListMovieResponse}
+// @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
+// @Failure 500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Router /movies [get]
 func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) {
 	util := handler.sharedUtil
 	v := validator.New()
@@ -255,14 +291,7 @@ func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) 
 
 	moviesDto := []dto.MovieResponse{}
 	for _, movie := range movies {
-		moviesDto = append(moviesDto, dto.MovieResponse{
-			ID:      movie.ID,
-			Title:   movie.Title,
-			Year:    movie.Year,
-			Runtime: movie.Runtime,
-			Genres:  movie.Genres,
-			Version: movie.Version,
-		})
+		moviesDto = append(moviesDto, getMovieResponse(movie))
 	}
 
 	err = handler.sharedUtil.WriteJson(rw, http.StatusOK, commons.ResponseObject{
@@ -277,5 +306,16 @@ func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) 
 		handler.sharedUtil.ServerErrorResponse(rw, r, err)
 
 		return
+	}
+}
+
+func getMovieResponse(movie *entities.Movie) dto.MovieResponse {
+	return dto.MovieResponse{
+		ID:      movie.ID,
+		Title:   movie.Title,
+		Year:    movie.Year,
+		Runtime: movie.Runtime,
+		Genres:  movie.Genres,
+		Version: movie.Version,
 	}
 }

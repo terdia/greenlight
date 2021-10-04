@@ -12,6 +12,10 @@ type MovieRequest struct {
 	Genres  []string             `json:"genres"`
 }
 
+type SingleMovieResponse struct {
+	Movie MovieResponse `json:"movie"`
+}
+
 type MovieResponse struct {
 	ID      custom_type.ID      `json:"id"`
 	Title   string              `json:"title"`
@@ -30,4 +34,8 @@ type ListMovieRequest struct {
 type ListMovieResponse struct {
 	Metadata data.Metadata   `json:"metadata"`
 	Movies   []MovieResponse `json:"movies"`
+}
+
+type ValidationError struct {
+	Errors map[string]string `json:"errors"`
 }

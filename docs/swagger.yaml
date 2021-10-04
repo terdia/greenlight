@@ -1,0 +1,319 @@
+basePath: /v1
+definitions:
+  commons.ResponseObject:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        description: (success|fail|error)
+        type: integer
+    type: object
+  data.Metadata:
+    properties:
+      current_page:
+        type: integer
+      first_page:
+        type: integer
+      last_page:
+        type: integer
+      page_size:
+        type: integer
+      total_records:
+        type: integer
+    type: object
+  dto.ListMovieResponse:
+    properties:
+      metadata:
+        $ref: '#/definitions/data.Metadata'
+      movies:
+        items:
+          $ref: '#/definitions/dto.MovieResponse'
+        type: array
+    type: object
+  dto.MovieResponse:
+    properties:
+      genres:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      runtime:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+      year:
+        type: integer
+    type: object
+  dto.SingleMovieResponse:
+    properties:
+      movie:
+        $ref: '#/definitions/dto.MovieResponse'
+    type: object
+  dto.ValidationError:
+    properties:
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+host: localhost:4000
+info:
+  contact: {}
+  title: Greenlight API documentation
+  version: 1.0.0
+paths:
+  /movies:
+    get:
+      description: get all movies
+      parameters:
+      - description: full text search by movie title
+        in: path
+        name: title
+        type: string
+      - description: command seperated list e.g. crime,drama
+        in: path
+        name: genres
+        type: string
+      - default: 1
+        description: page number
+        in: path
+        maximum: 10000000
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: page size
+        in: path
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - default: id
+        description: add - to sort in descing order
+        enum:
+        - id
+        - title
+        - year
+        - runtime
+        - -id
+        - -title
+        - -year
+        - -runtime
+        in: path
+        name: sort
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ListMovieResponse'
+              type: object
+        "422":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Get all movies
+      tags:
+      - Movies
+    post:
+      description: create a new movie with given details
+      parameters:
+      - description: Title for the movie, max length 500
+        in: body
+        name: title
+        required: true
+        schema:
+          type: primitive
+      - description: Published year e.g. 2021, must not be in the future
+        in: body
+        name: year
+        required: true
+        schema:
+          type: primitive
+      - description: Runtime e.g 98 mins
+        in: body
+        name: runtime
+        required: true
+        schema:
+          type: primitive
+      - description: Unique genres e.g action,adventure... maximum 5 genres
+        in: body
+        name: genres
+        required: true
+        schema:
+          type: primitive
+      responses:
+        "200":
+          description: OK
+          headers:
+            Location:
+              description: /v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SingleMovieResponse'
+              type: object
+        "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "422":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Create new movie
+      tags:
+      - Movies
+  /movies/{id}:
+    delete:
+      description: delete a given movie by Id
+      parameters:
+      - description: Id of the movie to delete
+        in: path
+        name: id
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "404":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Delete a given movie
+      tags:
+      - Movies
+    get:
+      description: show details of a given movie
+      parameters:
+      - description: Id of the movie to show
+        in: path
+        name: id
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SingleMovieResponse'
+              type: object
+        "404":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Show movie details by id
+      tags:
+      - Movies
+    patch:
+      description: update movie with given details
+      parameters:
+      - description: Id of the movie to update
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Title for the movie, max length 500
+        in: body
+        name: title
+        schema:
+          type: primitive
+      - description: Published year e.g. 2021, must not be in the future
+        in: body
+        name: year
+        schema:
+          type: primitive
+      - description: Runtime e.g 98 mins
+        in: body
+        name: runtime
+        schema:
+          type: primitive
+      - description: Unique genres e.g action,adventure... maximum 5 genres
+        in: body
+        name: genres
+        schema:
+          type: primitive
+      responses:
+        "200":
+          description: OK
+          headers:
+            Location:
+              description: /v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SingleMovieResponse'
+              type: object
+        "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "404":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "409":
+          description: 'e.g. status: error, message: unable to update the record due
+            to an edit conflict, please try again'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "422":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Update a given movie
+      tags:
+      - Movies
+swagger: "2.0"

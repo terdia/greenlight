@@ -20,6 +20,11 @@ type application struct {
 	registry registry.Registry
 }
 
+//https://greenlight.docker.local/v1
+// @title Greenlight API documentation
+// @version 1.0.0
+// @host localhost:4000
+// @BasePath /v1
 func main() {
 	cfg := config.NewConfig()
 	logger := logger.New(os.Stdout, logger.LevelInfo)

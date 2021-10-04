@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
+
+	_ "github.com/terdia/greenlight/docs"
 )
 
 func (app *application) routes() http.Handler {
@@ -27,6 +30,14 @@ func (app *application) routes() http.Handler {
 	router.Post("/v1/movies", movieHandler.CreateMovie)
 	router.Patch("/v1/movies/{id}", movieHandler.UpdateMovie)
 	router.Delete("/v1/movies/{id}", movieHandler.DeleteMovie)
+
+	// swagger API documentation UI
+	router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:4000/docs/swagger.json"),
+	))
+
+	fileServer := http.FileServer(http.Dir("./docs/"))
+	router.Handle("/docs/*", http.StripPrefix("/docs", fileServer))
 
 	return router
 }
