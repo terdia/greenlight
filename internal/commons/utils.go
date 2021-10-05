@@ -24,6 +24,7 @@ type SharedUtil interface {
 	ReadString(qs url.Values, key, defaultValue string) string
 	ReadInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int
 	ReadCSV(qs url.Values, key string, defaultValue []string) []string
+	RateLimitExceededResponse(w http.ResponseWriter, r *http.Request)
 }
 
 type sharedUtils struct {

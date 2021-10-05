@@ -58,3 +58,10 @@ func (util *sharedUtils) EditConflictResponse(w http.ResponseWriter, r *http.Req
 		Message: "unable to update the record due to an edit conflict, please try again",
 	})
 }
+
+func (util *sharedUtils) RateLimitExceededResponse(w http.ResponseWriter, r *http.Request) {
+
+	util.ErrorResponse(w, r, http.StatusTooManyRequests, ResponseObject{
+		Message: "rate limit exceeded",
+	})
+}

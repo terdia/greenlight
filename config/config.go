@@ -14,6 +14,11 @@ type Config struct {
 	Env     string
 	Db      Db
 	Version string
+	Limiter struct {
+		Rps     float64
+		Burst   int
+		Enabled bool
+	}
 }
 
 type Db struct {
@@ -34,6 +39,10 @@ func init() {
 	flag.IntVar(&db.MaxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&db.MaxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&db.MaxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
+
+	flag.Float64Var(&cfg.Limiter.Rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.Limiter.Burst, "limiter-burst", 4, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.Limiter.Enabled, "limiter-enabled", true, "Enable rate limiter")
 
 	cfg.Db = db
 
