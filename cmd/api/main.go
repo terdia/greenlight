@@ -1,11 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/lib/pq"
 
@@ -18,6 +14,7 @@ import (
 type application struct {
 	config   *config.Config
 	registry registry.Registry
+	logger   *logger.Logger
 }
 
 //https://greenlight.docker.local/v1
@@ -40,21 +37,11 @@ func main() {
 	app := &application{
 		config:   cfg,
 		registry: registry.NewRegistry(db, logger),
+		logger:   logger,
 	}
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.AppPort),
-		Handler:      app.routes(),
-		ErrorLog:     log.New(logger, "", 0),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+	err = app.serve()
+	if err != nil {
+		logger.PrintFatal(err, nil)
 	}
-
-	logger.PrintInfo("starting server", map[string]string{
-		"addr": fmt.Sprint(cfg.AppPort),
-		"env":  cfg.Env,
-	})
-	err = srv.ListenAndServe()
-	logger.PrintFatal(err, nil)
 }

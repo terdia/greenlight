@@ -88,3 +88,18 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 		}
 	})
 }
+
+func (app *application) logRequest(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		//log every request like so e.g. 172.18.0.1:60504 - HTTP/1.1 GET /snippet?id=4
+		app.logger.PrintInfo("incoming request", map[string]string{
+			"ip":     r.RemoteAddr,
+			"proto":  r.Proto,
+			"method": r.Method,
+			"uri":    r.URL.RequestURI(),
+		})
+
+		next.ServeHTTP(rw, r)
+	})
+}
