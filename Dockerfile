@@ -1,7 +1,5 @@
 FROM golang:1.17-alpine as builder
 
-RUN apk add --update curl && \
-    rm -rf /var/cache/apk/*
 
 WORKDIR /go/src/greenlight
 

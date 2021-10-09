@@ -47,9 +47,11 @@ func New(out io.Writer, minLevel Level) *Logger {
 func (l *Logger) PrintInfo(message string, context map[string]string) {
 	l.print(LevelInfo, message, context)
 }
+
 func (l *Logger) PrintError(err error, context map[string]string) {
 	l.print(LevelError, err.Error(), context)
 }
+
 func (l *Logger) PrintFatal(err error, context map[string]string) {
 	l.print(LevelFatal, err.Error(), context)
 	os.Exit(1)
