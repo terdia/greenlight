@@ -8,6 +8,8 @@ import (
 	"github.com/terdia/greenlight/internal/commons"
 	"github.com/terdia/greenlight/src/movies/handlers"
 	"github.com/terdia/greenlight/src/movies/services"
+	user_handler "github.com/terdia/greenlight/src/users/handlers"
+	user_services "github.com/terdia/greenlight/src/users/services"
 )
 
 type Registry struct {
@@ -21,18 +23,21 @@ type Services struct {
 
 type Handlers struct {
 	MovieHandler handlers.MovieHandle
+	UserHandler  user_handler.UserHandler
 }
 
 func NewRegistry(db *sql.DB, logger *logger.Logger) Registry {
 
 	utils := commons.NewUtil(logger)
 	movieService := services.NewMovieService(repository.NewMovieRepoitory(db))
+	userService := user_services.NewUserService(repository.NewUserRepoitory(db), user_services.NewPasswordService())
 
 	services := newServices(utils)
 
 	movieHandler := handlers.NewMovieHandler(utils, movieService)
+	userHandler := user_handler.NewUserHandler(utils, userService)
 
-	handlers := newHandlers(movieHandler)
+	handlers := newHandlers(movieHandler, userHandler)
 
 	return Registry{
 		Services: services,
@@ -46,8 +51,9 @@ func newServices(sharedUtil commons.SharedUtil) *Services {
 	}
 }
 
-func newHandlers(movieHandler handlers.MovieHandle) *Handlers {
+func newHandlers(movieHandler handlers.MovieHandle, userHandler user_handler.UserHandler) *Handlers {
 	return &Handlers{
 		MovieHandler: movieHandler,
+		UserHandler:  userHandler,
 	}
 }

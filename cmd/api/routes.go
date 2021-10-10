@@ -24,12 +24,15 @@ func (app *application) routes() http.Handler {
 
 	//Domain routes
 	movieHandler := app.registry.Handlers.MovieHandler
+	userHandler := app.registry.Handlers.UserHandler
 
 	router.Get("/v1/movies", movieHandler.ListMovie)
 	router.Get("/v1/movies/{id}", movieHandler.ShowMovie)
 	router.Post("/v1/movies", movieHandler.CreateMovie)
 	router.Patch("/v1/movies/{id}", movieHandler.UpdateMovie)
 	router.Delete("/v1/movies/{id}", movieHandler.DeleteMovie)
+
+	router.Post("/v1/users", userHandler.CreateMovie)
 
 	// swagger API documentation UI
 	router.Get("/swagger/*", httpSwagger.Handler(

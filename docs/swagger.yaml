@@ -22,6 +22,15 @@ definitions:
       total_records:
         type: integer
     type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
   dto.ListMovieResponse:
     properties:
       metadata:
@@ -52,6 +61,24 @@ definitions:
     properties:
       movie:
         $ref: '#/definitions/dto.MovieResponse'
+    type: object
+  dto.SingleUserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      version:
+        type: integer
     type: object
   dto.ValidationError:
     properties:
@@ -316,4 +343,48 @@ paths:
       summary: Update a given movie
       tags:
       - Movies
+  /users:
+    post:
+      description: create a new user with given details
+      parameters:
+      - description: create user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      responses:
+        "200":
+          description: OK
+          headers:
+            Location:
+              description: /v1/users/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SingleUserResponse'
+              type: object
+        "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "422":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Create new user
+      tags:
+      - Users
 swagger: "2.0"

@@ -425,6 +425,82 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/users": {
+            "post": {
+                "description": "create a new user with given details",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create new user",
+                "parameters": [
+                    {
+                        "description": "create user",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SingleUserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Location": {
+                                "type": "string",
+                                "description": "/v1/users/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "422": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -458,6 +534,20 @@ var doc = `{
                 },
                 "total_records": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         },
@@ -506,6 +596,34 @@ var doc = `{
             "properties": {
                 "movie": {
                     "$ref": "#/definitions/dto.MovieResponse"
+                }
+            }
+        },
+        "dto.SingleUserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/dto.UserResponse"
+                }
+            }
+        },
+        "dto.UserResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
                 }
             }
         },
