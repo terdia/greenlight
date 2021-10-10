@@ -25,10 +25,13 @@ definitions:
   dto.CreateUserRequest:
     properties:
       email:
+        description: unique email address
         type: string
       name:
+        description: fullname
         type: string
       password:
+        description: minimum 8 bytes maximum 72 bytes
         type: string
     type: object
   dto.ListMovieResponse:
@@ -39,6 +42,23 @@ definitions:
         items:
           $ref: '#/definitions/dto.MovieResponse'
         type: array
+    type: object
+  dto.MovieRequest:
+    properties:
+      genres:
+        description: unique genres e.g action,adventure... maximum 5 genres
+        items:
+          type: string
+        type: array
+      runtime:
+        description: e.g 98 mins
+        type: integer
+      title:
+        description: title for the movie, max length 500
+        type: string
+      year:
+        description: published year e.g. 2021, must not be in the future
+        type: integer
     type: object
   dto.MovieResponse:
     properties:
@@ -162,30 +182,12 @@ paths:
     post:
       description: create a new movie with given details
       parameters:
-      - description: Title for the movie, max length 500
+      - description: Update movie request
         in: body
-        name: title
+        name: body
         required: true
         schema:
-          type: primitive
-      - description: Published year e.g. 2021, must not be in the future
-        in: body
-        name: year
-        required: true
-        schema:
-          type: primitive
-      - description: Runtime e.g 98 mins
-        in: body
-        name: runtime
-        required: true
-        schema:
-          type: primitive
-      - description: Unique genres e.g action,adventure... maximum 5 genres
-        in: body
-        name: genres
-        required: true
-        schema:
-          type: primitive
+          $ref: '#/definitions/dto.MovieRequest'
       responses:
         "200":
           description: OK
@@ -280,26 +282,11 @@ paths:
         name: id
         required: true
         type: string
-      - description: Title for the movie, max length 500
+      - description: Update movie request
         in: body
-        name: title
+        name: body
         schema:
-          type: primitive
-      - description: Published year e.g. 2021, must not be in the future
-        in: body
-        name: year
-        schema:
-          type: primitive
-      - description: Runtime e.g 98 mins
-        in: body
-        name: runtime
-        schema:
-          type: primitive
-      - description: Unique genres e.g action,adventure... maximum 5 genres
-        in: body
-        name: genres
-        schema:
-          type: primitive
+          $ref: '#/definitions/dto.MovieRequest'
       responses:
         "200":
           description: OK

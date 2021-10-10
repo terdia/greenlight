@@ -6,10 +6,10 @@ import (
 )
 
 type MovieRequest struct {
-	Title   *string              `json:"title"`
-	Year    *int32               `json:"year"`
-	Runtime *custom_type.Runtime `json:"runtime"`
-	Genres  []string             `json:"genres"`
+	Title   *string              `json:"title"`   //title for the movie, max length 500
+	Year    *int32               `json:"year"`    // published year e.g. 2021, must not be in the future
+	Runtime *custom_type.Runtime `json:"runtime"` // e.g 98 mins
+	Genres  []string             `json:"genres"`  // unique genres e.g action,adventure... maximum 5 genres
 }
 
 type SingleMovieResponse struct {

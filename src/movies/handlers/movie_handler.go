@@ -38,10 +38,7 @@ func NewMovieHandler(util commons.SharedUtil, service services.MovieService) Mov
 // @Summary Create new movie
 // @Description create a new movie with given details
 // @Tags Movies
-// @Param title body string true "Title for the movie, max length 500"
-// @Param year body integer true "Published year e.g. 2021, must not be in the future"
-// @Param runtime body string true "Runtime e.g 98 mins"
-// @Param genres body string true "Unique genres e.g action,adventure... maximum 5 genres"
+// @Param body body dto.MovieRequest true "Update movie request"
 // @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
 // @Header 200 {string} Location "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
 // @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
@@ -143,10 +140,7 @@ func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) 
 // @Description update movie with given details
 // @Tags Movies
 // @Param id path string true "Id of the movie to update"
-// @Param title body string false "Title for the movie, max length 500"
-// @Param year body integer false "Published year e.g. 2021, must not be in the future"
-// @Param runtime body string false "Runtime e.g 98 mins"
-// @Param genres body string false "Unique genres e.g action,adventure... maximum 5 genres"
+// @Param body body dto.MovieRequest false "Update movie request"
 // @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
 // @Header 200 {string} Location "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
 // @Failure 409 {object} commons.ResponseObject "e.g. status: error, message: unable to update the record due to an edit conflict, please try again"

@@ -132,39 +132,12 @@ var doc = `{
                 "summary": "Create new movie",
                 "parameters": [
                     {
-                        "description": "Title for the movie, max length 500",
-                        "name": "title",
+                        "description": "Update movie request",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "primitive"
-                        }
-                    },
-                    {
-                        "description": "Published year e.g. 2021, must not be in the future",
-                        "name": "year",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "primitive"
-                        }
-                    },
-                    {
-                        "description": "Runtime e.g 98 mins",
-                        "name": "runtime",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "primitive"
-                        }
-                    },
-                    {
-                        "description": "Unique genres e.g action,adventure... maximum 5 genres",
-                        "name": "genres",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "primitive"
+                            "$ref": "#/definitions/dto.MovieRequest"
                         }
                     }
                 ],
@@ -324,35 +297,11 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "description": "Title for the movie, max length 500",
-                        "name": "title",
+                        "description": "Update movie request",
+                        "name": "body",
                         "in": "body",
                         "schema": {
-                            "type": "primitive"
-                        }
-                    },
-                    {
-                        "description": "Published year e.g. 2021, must not be in the future",
-                        "name": "year",
-                        "in": "body",
-                        "schema": {
-                            "type": "primitive"
-                        }
-                    },
-                    {
-                        "description": "Runtime e.g 98 mins",
-                        "name": "runtime",
-                        "in": "body",
-                        "schema": {
-                            "type": "primitive"
-                        }
-                    },
-                    {
-                        "description": "Unique genres e.g action,adventure... maximum 5 genres",
-                        "name": "genres",
-                        "in": "body",
-                        "schema": {
-                            "type": "primitive"
+                            "$ref": "#/definitions/dto.MovieRequest"
                         }
                     }
                 ],
@@ -541,12 +490,15 @@ var doc = `{
             "type": "object",
             "properties": {
                 "email": {
+                    "description": "unique email address",
                     "type": "string"
                 },
                 "name": {
+                    "description": "fullname",
                     "type": "string"
                 },
                 "password": {
+                    "description": "minimum 8 bytes maximum 72 bytes",
                     "type": "string"
                 }
             }
@@ -562,6 +514,30 @@ var doc = `{
                     "items": {
                         "$ref": "#/definitions/dto.MovieResponse"
                     }
+                }
+            }
+        },
+        "dto.MovieRequest": {
+            "type": "object",
+            "properties": {
+                "genres": {
+                    "description": "unique genres e.g action,adventure... maximum 5 genres",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "runtime": {
+                    "description": "e.g 98 mins",
+                    "type": "integer"
+                },
+                "title": {
+                    "description": "title for the movie, max length 500",
+                    "type": "string"
+                },
+                "year": {
+                    "description": "published year e.g. 2021, must not be in the future",
+                    "type": "integer"
                 }
             }
         },

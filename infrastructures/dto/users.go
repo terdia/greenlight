@@ -7,9 +7,9 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name"`     // fullname
+	Email    string `json:"email"`    // unique email address
+	Password string `json:"password"` // minimum 8 bytes maximum 72 bytes
 }
 
 type SingleUserResponse struct {
