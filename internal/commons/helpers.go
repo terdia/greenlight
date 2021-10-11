@@ -2,10 +2,12 @@ package commons
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -65,5 +67,26 @@ func (util *sharedUtils) ReadCSV(qs url.Values, key string, defaultValue []strin
 	}
 
 	return strings.Split(csv, ",")
+
+}
+
+func (util *sharedUtils) Background(fn func()) {
+
+	util.wg.Add(1)
+
+	go func() {
+
+		defer util.wg.Done()
+
+		time.Sleep(5 * time.Second)
+
+		defer func() {
+			if err := recover(); err != nil {
+				util.LogErrorWithContext(fmt.Errorf("%s", err), nil)
+			}
+		}()
+
+		fn()
+	}()
 
 }

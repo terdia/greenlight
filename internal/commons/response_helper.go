@@ -40,7 +40,7 @@ func (util *sharedUtils) ErrorResponse(rw http.ResponseWriter, r *http.Request, 
 	err := util.WriteJson(rw, status, envelop, nil)
 	if err != nil {
 
-		util.LogError(r, err)
+		util.LogErrorWithHttpRequestContext(r, err)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 }

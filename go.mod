@@ -7,6 +7,7 @@ require github.com/go-chi/chi/v5 v5.0.4
 require github.com/lib/pq v1.10.2
 
 require (
+	github.com/go-mail/mail/v2 v2.3.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/swaggo/http-swagger v1.1.1
 	github.com/swaggo/swag v1.7.3
@@ -31,7 +32,9 @@ require (
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.1.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/mail.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

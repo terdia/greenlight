@@ -3,6 +3,7 @@ package commons
 import (
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/terdia/greenlight/infrastructures/logger"
 	"github.com/terdia/greenlight/internal/custom_type"
@@ -10,7 +11,8 @@ import (
 )
 
 type SharedUtil interface {
-	LogError(r *http.Request, err error)
+	LogErrorWithHttpRequestContext(r *http.Request, err error)
+	LogErrorWithContext(err error, context map[string]string)
 	ServerErrorResponse(rw http.ResponseWriter, r *http.Request, err error)
 	NotFoundResponse(rw http.ResponseWriter, r *http.Request)
 	EditConflictResponse(rw http.ResponseWriter, r *http.Request)
@@ -25,14 +27,16 @@ type SharedUtil interface {
 	ReadInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int
 	ReadCSV(qs url.Values, key string, defaultValue []string) []string
 	RateLimitExceededResponse(w http.ResponseWriter, r *http.Request)
+	Background(fn func())
 }
 
 type sharedUtils struct {
 	logger *logger.Logger
+	wg     *sync.WaitGroup
 }
 
-func NewUtil(log *logger.Logger) SharedUtil {
-	return &sharedUtils{logger: log}
+func NewUtil(log *logger.Logger, wg *sync.WaitGroup) SharedUtil {
+	return &sharedUtils{logger: log, wg: wg}
 }
 
 //based on https://github.com/omniti-labs/jsend

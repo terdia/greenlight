@@ -2,10 +2,12 @@ package registry
 
 import (
 	"database/sql"
+	"sync"
 
 	"github.com/terdia/greenlight/infrastructures/logger"
 	"github.com/terdia/greenlight/infrastructures/persistence/postgres/repository"
 	"github.com/terdia/greenlight/internal/commons"
+	"github.com/terdia/greenlight/internal/mailer"
 	"github.com/terdia/greenlight/src/movies/handlers"
 	"github.com/terdia/greenlight/src/movies/services"
 	user_handler "github.com/terdia/greenlight/src/users/handlers"
@@ -26,11 +28,15 @@ type Handlers struct {
 	UserHandler  user_handler.UserHandler
 }
 
-func NewRegistry(db *sql.DB, logger *logger.Logger) Registry {
+func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sync.WaitGroup) Registry {
 
-	utils := commons.NewUtil(logger)
+	utils := commons.NewUtil(logger, wg)
 	movieService := services.NewMovieService(repository.NewMovieRepoitory(db))
-	userService := user_services.NewUserService(repository.NewUserRepoitory(db), user_services.NewPasswordService())
+	userService := user_services.NewUserService(
+		repository.NewUserRepoitory(db),
+		user_services.NewPasswordService(),
+		mailer,
+	)
 
 	services := newServices(utils)
 

@@ -70,6 +70,18 @@ func (handler *userHandler) CreateMovie(rw http.ResponseWriter, r *http.Request)
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/users/%s", idString))
 
+	templateDate := struct {
+		ID string
+	}{ID: idString}
+
+	// send welocme email using background process
+	utils.Background(func() {
+		err = handler.service.SendMail(user.Email, "user_welcome.tmpl", templateDate)
+		if err != nil {
+			utils.LogErrorWithContext(err, nil)
+		}
+	})
+
 	err = handler.sharedUtil.WriteJson(rw, http.StatusCreated, result, headers)
 	if err != nil {
 		handler.sharedUtil.ServerErrorResponse(rw, r, err)

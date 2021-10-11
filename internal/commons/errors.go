@@ -8,15 +8,19 @@ import (
 	"github.com/terdia/greenlight/internal/custom_type"
 )
 
-func (util *sharedUtils) LogError(r *http.Request, err error) {
+func (util *sharedUtils) LogErrorWithHttpRequestContext(r *http.Request, err error) {
 	util.logger.PrintError(err, map[string]string{
 		"request_method": r.Method,
 		"request_url":    r.URL.String(),
 	})
 }
 
+func (util *sharedUtils) LogErrorWithContext(err error, context map[string]string) {
+	util.logger.PrintError(err, context)
+}
+
 func (util *sharedUtils) ServerErrorResponse(rw http.ResponseWriter, r *http.Request, err error) {
-	util.LogError(r, err)
+	util.LogErrorWithHttpRequestContext(r, err)
 
 	message := "the server encountered a problem and could not process your request"
 	util.ErrorResponse(rw, r, http.StatusInternalServerError, ResponseObject{

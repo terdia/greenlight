@@ -5,6 +5,7 @@ import (
 
 	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/data"
+	"github.com/terdia/greenlight/internal/mailer"
 	"github.com/terdia/greenlight/internal/validator"
 	"github.com/terdia/greenlight/src/users/entities"
 	"github.com/terdia/greenlight/src/users/repositories"
@@ -14,15 +15,17 @@ type UserValidationErrors map[string]string
 
 type UserService interface {
 	Create(request dto.CreateUserRequest) (*entities.User, UserValidationErrors, error)
+	SendMail(recipient, templateFile string, data interface{}) error
 }
 
 type userService struct {
 	repo            repositories.UserRepository
 	passHashService PasswordHashService
+	mailer          mailer.Mailer
 }
 
-func NewUserService(repo repositories.UserRepository, passHashService PasswordHashService) UserService {
-	return &userService{repo: repo, passHashService: passHashService}
+func NewUserService(repo repositories.UserRepository, passHashService PasswordHashService, mailer mailer.Mailer) UserService {
+	return &userService{repo: repo, passHashService: passHashService, mailer: mailer}
 }
 
 func (srv *userService) Create(request dto.CreateUserRequest) (*entities.User, UserValidationErrors, error) {
@@ -66,4 +69,9 @@ func (srv *userService) Create(request dto.CreateUserRequest) (*entities.User, U
 	}
 
 	return user, nil, nil
+}
+
+func (srv *userService) SendMail(recipient, templateFile string, data interface{}) error {
+
+	return srv.mailer.Send(recipient, templateFile, data)
 }

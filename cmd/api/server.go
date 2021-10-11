@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const (
+	gracePeriod = 5 * time.Second
+)
+
 func (app *application) serve() error {
 
 	srv := &http.Server{
@@ -38,10 +42,20 @@ func (app *application) serve() error {
 		})
 
 		// 5 seconds grace period before shutdown
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), gracePeriod)
 		defer cancel()
 
-		shutdownError <- srv.Shutdown(ctx)
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			shutdownError <- err
+		}
+
+		app.logger.PrintInfo("completing background tasks", map[string]string{
+			"addr": srv.Addr,
+		})
+
+		app.wg.Wait() // wait for background go routines to finish before shuting down
+		shutdownError <- nil
 	}()
 
 	app.logger.PrintInfo("starting server", map[string]string{

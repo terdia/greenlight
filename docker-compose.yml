@@ -16,6 +16,11 @@ services:
         - terdia-proxy
     environment: 
         GREENLIGHT_DB_DSN: ${GREENLIGHT_DB_DSN}
+        SMTP_HOST: ${SMTP_HOST}
+        SMTP_PORT: ${SMTP_PORT}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSOWRD: ${MAIL_PASSOWRD}
+        MAIL_SENDER: ${MAIL_SENDER}
 
   # migrate:
   #     image: migrate/migrate
