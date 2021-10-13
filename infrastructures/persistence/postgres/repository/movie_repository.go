@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/lib/pq"
 
@@ -16,11 +15,11 @@ import (
 )
 
 type movieRepository struct {
-	sql.DB
+	*sql.DB
 }
 
 func NewMovieRepoitory(db *sql.DB) repositories.MovieRepository {
-	return &movieRepository{*db}
+	return &movieRepository{db}
 }
 
 func (repo *movieRepository) Insert(movie *entities.Movie) error {
@@ -30,7 +29,7 @@ func (repo *movieRepository) Insert(movie *entities.Movie) error {
 
 	queryParams := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 
 	defer cancel()
 
@@ -49,7 +48,7 @@ func (repo *movieRepository) Get(id int64) (*entities.Movie, error) {
 
 	var movie entities.Movie
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 
 	defer cancel()
 
@@ -90,7 +89,7 @@ func (repo *movieRepository) Update(movie *entities.Movie) error {
 	// Execute the SQL query. If no matching row could be found, we know the movie
 	// version has changed (or the record has been deleted) and we return our custom
 	// ErrEditConflict error.
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 
 	defer cancel()
 
@@ -114,7 +113,7 @@ func (repo *movieRepository) Delete(id int64) error {
 
 	query := `DELETE FROM movies WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 
 	defer cancel()
 
@@ -146,7 +145,7 @@ func (repo *movieRepository) GetAll(r dto.ListMovieRequest) ([]*entities.Movie, 
 			ORDER BY %s %s, id ASC 
 			LIMIT $3 OFFSET $4`, filters.SortColumn(), filters.SortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 	defer cancel()
 
 	args := []interface{}{r.Title, pq.Array(r.Genres), filters.Limit(), filters.Offset()}

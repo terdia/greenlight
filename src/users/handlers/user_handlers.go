@@ -3,10 +3,12 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/commons"
 	"github.com/terdia/greenlight/internal/custom_type"
+	"github.com/terdia/greenlight/internal/data"
 	"github.com/terdia/greenlight/src/users/entities"
 	"github.com/terdia/greenlight/src/users/services"
 )
@@ -16,12 +18,17 @@ type UserHandler interface {
 }
 
 type userHandler struct {
-	sharedUtil commons.SharedUtil
-	service    services.UserService
+	sharedUtil   commons.SharedUtil
+	service      services.UserService
+	tokenService services.TokenService
 }
 
-func NewUserHandler(utils commons.SharedUtil, srv services.UserService) UserHandler {
-	return &userHandler{sharedUtil: utils, service: srv}
+func NewUserHandler(
+	utils commons.SharedUtil,
+	srv services.UserService,
+	tokenService services.TokenService,
+) UserHandler {
+	return &userHandler{sharedUtil: utils, service: srv, tokenService: tokenService}
 }
 
 // CreateUser ... Create user
@@ -59,30 +66,44 @@ func (handler *userHandler) CreateMovie(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	result := commons.ResponseObject{
+	idString, _ := custom_type.EncodeId(int(user.ID))
+	token, err := handler.tokenService.CreateNew(user.ID, 3*24*time.Hour, data.TokenScopeActivation)
+	if err != nil {
+		utils.ServerErrorResponse(rw, r, err)
+
+		return
+	}
+
+	// send welocme email using background process
+	utils.Background(func() {
+
+		templateData := struct {
+			ID    string
+			Token string
+		}{
+			ID:    idString,
+			Token: token.Plaintext,
+		}
+
+		err = handler.service.SendMail(user.Email, "user_welcome.tmpl", templateData)
+		if err != nil {
+			utils.LogErrorWithContext(err, map[string]string{
+				"task":            "gorountine",
+				"userId":          idString,
+				"activationToken": token.Plaintext,
+			})
+		}
+	})
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/users/%s", idString))
+
+	err = handler.sharedUtil.WriteJson(rw, http.StatusCreated, commons.ResponseObject{
 		StatusMsg: custom_type.Success,
 		Data: dto.SingleUserResponse{
 			User: getUserResponse(user),
 		},
-	}
-
-	idString, _ := custom_type.EncodeId(int(user.ID))
-	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/v1/users/%s", idString))
-
-	templateDate := struct {
-		ID string
-	}{ID: idString}
-
-	// send welocme email using background process
-	utils.Background(func() {
-		err = handler.service.SendMail(user.Email, "user_welcome.tmpl", templateDate)
-		if err != nil {
-			utils.LogErrorWithContext(err, nil)
-		}
-	})
-
-	err = handler.sharedUtil.WriteJson(rw, http.StatusCreated, result, headers)
+	}, headers)
 	if err != nil {
 		handler.sharedUtil.ServerErrorResponse(rw, r, err)
 
