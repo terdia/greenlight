@@ -88,7 +88,7 @@ func (handler *userHandler) CreateMovie(rw http.ResponseWriter, r *http.Request)
 		err = handler.service.SendMail(user.Email, "user_welcome.tmpl", templateData)
 		if err != nil {
 			utils.LogErrorWithContext(err, map[string]string{
-				"task":            "gorountine",
+				"task":            "email sending gorountine",
 				"userId":          idString,
 				"activationToken": token.Plaintext,
 			})
