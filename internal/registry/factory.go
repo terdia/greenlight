@@ -28,6 +28,7 @@ type Handlers struct {
 	UserHandler  user_handler.UserHandler
 }
 
+//todo clean up, split into domains and aggregate here
 func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sync.WaitGroup) Registry {
 
 	utils := commons.NewUtil(logger, wg)
@@ -38,10 +39,14 @@ func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sy
 		mailer,
 	)
 
+	tokenService := user_services.NewTokenService(
+		repository.NewTokenRepository(db),
+	)
+
 	services := newServices(utils)
 
 	movieHandler := handlers.NewMovieHandler(utils, movieService)
-	userHandler := user_handler.NewUserHandler(utils, userService)
+	userHandler := user_handler.NewUserHandler(utils, userService, tokenService)
 
 	handlers := newHandlers(movieHandler, userHandler)
 

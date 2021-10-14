@@ -10,3 +10,7 @@ var (
 	ErrInvalidCredentials = errors.New("models: invalid credentials")
 	ErrDuplicateEmail     = errors.New("a user with this email address already exists")
 )
+
+const (
+	TokenScopeActivation = "activation"
+)

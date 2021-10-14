@@ -12,15 +12,15 @@ import (
 )
 
 const (
-	queryTimeout = 3 * time.Second
+	QueryTimeout = 3 * time.Second
 )
 
 type userRepository struct {
-	sql.DB
+	*sql.DB
 }
 
 func NewUserRepoitory(db *sql.DB) repositories.UserRepository {
-	return &userRepository{*db}
+	return &userRepository{db}
 }
 
 func (repo *userRepository) Insert(user *entities.User) error {
@@ -31,7 +31,7 @@ func (repo *userRepository) Insert(user *entities.User) error {
 
 	queryParams := []interface{}{user.Name, user.Email, user.Password.Hash, user.Activated}
 
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 	defer cancel()
 
 	err := repo.QueryRowContext(ctx, query, queryParams...).Scan(&user.ID, &user.CreatedAt, &user.Version)
@@ -51,7 +51,7 @@ func (repo *userRepository) GetByEmail(email string) (*entities.User, error) {
 
 	var user entities.User
 
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 	defer cancel()
 
 	err := repo.QueryRowContext(ctx, query, email).Scan(
@@ -88,7 +88,7 @@ func (repo *userRepository) Update(user *entities.User) error {
 	// Execute the SQL query. If no matching row could be found, we know the user
 	// version has changed (or the record has been deleted) and we return our custom
 	// ErrEditConflict error.
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 
 	defer cancel()
 
