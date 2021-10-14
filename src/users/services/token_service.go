@@ -4,9 +4,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base32"
+	"errors"
 	"time"
 
 	"github.com/terdia/greenlight/internal/custom_type"
+	"github.com/terdia/greenlight/internal/validator"
 	"github.com/terdia/greenlight/src/users/entities"
 	"github.com/terdia/greenlight/src/users/repositories"
 )
@@ -27,6 +29,12 @@ func (tsrv tokenService) CreateNew(userId custom_type.ID, ttl time.Duration, sco
 	token, err := generateToken(userId, ttl, scope)
 	if err != nil {
 		return nil, err
+	}
+
+	v := validator.New()
+	token.ValidateTokenPlaintext(v)
+	if !v.Valid() {
+		return nil, errors.New("someting when wrong while generating activation token")
 	}
 
 	err = tsrv.repo.Create(token)
