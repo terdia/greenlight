@@ -450,6 +450,82 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/users/activated": {
+            "put": {
+                "description": "activate the account of a user using the given token",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Activate user account",
+                "parameters": [
+                    {
+                        "description": "activate user",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ActivateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SingleUserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "409": {
+                        "description": "e.g. status: error, message: unable to update the record due to an edit conflict, please try again",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "422": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -483,6 +559,14 @@ var doc = `{
                 },
                 "total_records": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.ActivateUserRequest": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
                 }
             }
         },
@@ -586,6 +670,9 @@ var doc = `{
         "dto.UserResponse": {
             "type": "object",
             "properties": {
+                "activated": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -14,7 +15,8 @@ import (
 )
 
 type UserHandler interface {
-	CreateMovie(rw http.ResponseWriter, r *http.Request)
+	CreateUser(rw http.ResponseWriter, r *http.Request)
+	ActivateUser(rw http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {
@@ -41,7 +43,7 @@ func NewUserHandler(
 // @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
 // @Failure 400,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
 // @Router /users [post]
-func (handler *userHandler) CreateMovie(rw http.ResponseWriter, r *http.Request) {
+func (handler *userHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 
 	request := dto.CreateUserRequest{}
 	utils := handler.sharedUtil
@@ -112,11 +114,80 @@ func (handler *userHandler) CreateMovie(rw http.ResponseWriter, r *http.Request)
 
 }
 
+// ActivateUser ... Activate user account
+// @Summary Activate user account
+// @Description activate the account of a user using the given token
+// @Tags Users
+// @Param body body dto.ActivateUserRequest true "activate user"
+// @Success 200 {object} commons.ResponseObject{data=dto.SingleUserResponse}
+// @Failure 409 {object} commons.ResponseObject "e.g. status: error, message: unable to update the record due to an edit conflict, please try again"
+// @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
+// @Failure 400,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Router /users/activated [put]
+func (handler *userHandler) ActivateUser(rw http.ResponseWriter, r *http.Request) {
+	request := dto.ActivateUserRequest{}
+	utils := handler.sharedUtil
+
+	err := utils.ReadJson(rw, r, &request)
+	if err != nil {
+		utils.BadRequestResponse(rw, r, err)
+
+		return
+	}
+
+	user, validationErrors, err := handler.service.ActivateUser(request)
+	if validationErrors != nil {
+		utils.FailedValidationResponse(rw, r, validationErrors)
+
+		return
+	}
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			utils.EditConflictResponse(rw, r)
+		default:
+			utils.ServerErrorResponse(rw, r, err)
+		}
+		return
+	}
+
+	// run background task to delete tokens
+	utils.Background(func() {
+		plainTokenText := request.TokenPlaintext
+		err := handler.tokenService.DeleteByUserIdAndScope(user.ID, data.TokenScopeActivation)
+
+		if err != nil {
+			encodedUserId, err := custom_type.EncodeId(int(user.ID))
+			utils.LogErrorWithContext(err, map[string]string{
+				"task":            "user activation, delete token for user by scope",
+				"userId":          encodedUserId,
+				"activationToken": plainTokenText,
+			})
+		}
+
+	})
+
+	err = handler.sharedUtil.WriteJson(rw, http.StatusOK, commons.ResponseObject{
+		StatusMsg: custom_type.Success,
+		Data: dto.SingleUserResponse{
+			User: getUserResponse(user),
+		},
+	}, nil)
+	if err != nil {
+		handler.sharedUtil.ServerErrorResponse(rw, r, err)
+
+		return
+	}
+
+}
+
 func getUserResponse(user *entities.User) dto.UserResponse {
 	return dto.UserResponse{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
+		Activated: user.Activated,
 		CreatedAt: user.CreatedAt,
 		Version:   user.Version,
 	}

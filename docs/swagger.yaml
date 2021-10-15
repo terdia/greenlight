@@ -22,6 +22,11 @@ definitions:
       total_records:
         type: integer
     type: object
+  dto.ActivateUserRequest:
+    properties:
+      token:
+        type: string
+    type: object
   dto.CreateUserRequest:
     properties:
       email:
@@ -89,6 +94,8 @@ definitions:
     type: object
   dto.UserResponse:
     properties:
+      activated:
+        type: boolean
       created_at:
         type: string
       email:
@@ -372,6 +379,51 @@ paths:
           schema:
             $ref: '#/definitions/commons.ResponseObject'
       summary: Create new user
+      tags:
+      - Users
+  /users/activated:
+    put:
+      description: activate the account of a user using the given token
+      parameters:
+      - description: activate user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ActivateUserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SingleUserResponse'
+              type: object
+        "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "409":
+          description: 'e.g. status: error, message: unable to update the record due
+            to an edit conflict, please try again'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "422":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Activate user account
       tags:
       - Users
 swagger: "2.0"

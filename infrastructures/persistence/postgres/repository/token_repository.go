@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/terdia/greenlight/internal/custom_type"
 	"github.com/terdia/greenlight/src/users/entities"
 	"github.com/terdia/greenlight/src/users/repositories"
 )
@@ -32,7 +33,7 @@ func (repo *tokenRepository) Create(token *entities.Token) error {
 	return err
 }
 
-func (repo *tokenRepository) DeleteAllForUserByScope(scope string, userID int64) error {
+func (repo *tokenRepository) DeleteAllForUserByScope(scope string, userID custom_type.ID) error {
 
 	query := `
 			DELETE FROM tokens

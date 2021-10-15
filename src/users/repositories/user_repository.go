@@ -6,5 +6,5 @@ type UserRepository interface {
 	Insert(user *entities.User) error
 	Update(user *entities.User) error
 	GetByEmail(email string) (*entities.User, error)
-	//GetAll(dto.ListMovieRequest) ([]*entities.User, data.Metadata, error)
+	GetForToken(tokenPlainText, scope string) (*entities.User, error)
 }

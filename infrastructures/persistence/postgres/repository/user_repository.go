@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"errors"
 	"time"
@@ -105,4 +106,48 @@ func (repo *userRepository) Update(user *entities.User) error {
 	}
 
 	return nil
+}
+
+func (repo *userRepository) GetForToken(tokenPlainText, scope string) (*entities.User, error) {
+
+	hash := sha256.Sum256([]byte(tokenPlainText))
+
+	query := `
+			SELECT users.id, users.created_at, users.name, users.email, 
+			users.password_hash, users.activated, users.version
+			FROM users
+			INNER JOIN tokens
+			ON users.id = tokens.user_id
+			WHERE tokens.hash = $1
+			AND tokens.scope = $2
+			AND tokens.expiry > $3`
+
+	args := []interface{}{hash[:], scope, time.Now()}
+
+	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
+	defer cancel()
+
+	var user entities.User
+
+	err := repo.DB.QueryRowContext(ctx, query, args...).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Name,
+		&user.Email,
+		&user.Password.Hash,
+		&user.Activated,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, data.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+
 }

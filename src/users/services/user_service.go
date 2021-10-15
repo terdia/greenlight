@@ -16,6 +16,7 @@ type UserValidationErrors map[string]string
 type UserService interface {
 	Create(request dto.CreateUserRequest) (*entities.User, UserValidationErrors, error)
 	SendMail(recipient, templateFile string, data interface{}) error
+	ActivateUser(request dto.ActivateUserRequest) (*entities.User, UserValidationErrors, error)
 }
 
 type userService struct {
@@ -74,4 +75,39 @@ func (srv *userService) Create(request dto.CreateUserRequest) (*entities.User, U
 func (srv *userService) SendMail(recipient, templateFile string, data interface{}) error {
 
 	return srv.mailer.Send(recipient, templateFile, data)
+}
+
+func (srv *userService) ActivateUser(request dto.ActivateUserRequest) (*entities.User, UserValidationErrors, error) {
+
+	v := validator.New()
+
+	if validateActivateUserRequest(v, request); !v.Valid() {
+		return nil, v.Errors, nil
+	}
+
+	user, err := srv.repo.GetForToken(request.TokenPlaintext, data.TokenScopeActivation)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			v.AddError("token", "invalid or expired token")
+			return nil, v.Errors, nil
+		default:
+			return nil, nil, err
+		}
+	}
+
+	user.Activated = true
+
+	err = srv.repo.Update(user)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return user, nil, nil
+}
+
+func validateActivateUserRequest(v *validator.Validator, r dto.ActivateUserRequest) {
+	v.Check(r.TokenPlaintext != "", "token", "must be provided")
+	v.Check(len(r.TokenPlaintext) == 26, "token", "must be 26 bytes long")
 }

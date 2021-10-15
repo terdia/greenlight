@@ -4,17 +4,16 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base32"
-	"errors"
 	"time"
 
 	"github.com/terdia/greenlight/internal/custom_type"
-	"github.com/terdia/greenlight/internal/validator"
 	"github.com/terdia/greenlight/src/users/entities"
 	"github.com/terdia/greenlight/src/users/repositories"
 )
 
 type TokenService interface {
 	CreateNew(userId custom_type.ID, ttl time.Duration, scope string) (*entities.Token, error)
+	DeleteByUserIdAndScope(userId custom_type.ID, scope string) error
 }
 
 type tokenService struct {
@@ -31,15 +30,13 @@ func (tsrv tokenService) CreateNew(userId custom_type.ID, ttl time.Duration, sco
 		return nil, err
 	}
 
-	v := validator.New()
-	token.ValidateTokenPlaintext(v)
-	if !v.Valid() {
-		return nil, errors.New("someting when wrong while generating activation token")
-	}
-
 	err = tsrv.repo.Create(token)
 
 	return token, err
+}
+
+func (tsrv tokenService) DeleteByUserIdAndScope(userId custom_type.ID, scope string) error {
+	return tsrv.repo.DeleteAllForUserByScope(scope, userId)
 }
 
 func generateToken(userId custom_type.ID, ttl time.Duration, scope string) (*entities.Token, error) {

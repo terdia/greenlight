@@ -32,7 +32,8 @@ func (app *application) routes() http.Handler {
 	router.Patch("/v1/movies/{id}", movieHandler.UpdateMovie)
 	router.Delete("/v1/movies/{id}", movieHandler.DeleteMovie)
 
-	router.Post("/v1/users", userHandler.CreateMovie)
+	router.Post("/v1/users", userHandler.CreateUser)
+	router.Put("/v1/users/activated", userHandler.ActivateUser)
 
 	// swagger API documentation UI
 	router.Get("/swagger/*", httpSwagger.Handler(
