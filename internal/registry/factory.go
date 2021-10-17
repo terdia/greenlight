@@ -11,6 +11,7 @@ import (
 	"github.com/terdia/greenlight/src/movies/handlers"
 	"github.com/terdia/greenlight/src/movies/services"
 	user_handler "github.com/terdia/greenlight/src/users/handlers"
+	user_repository "github.com/terdia/greenlight/src/users/repositories"
 	user_services "github.com/terdia/greenlight/src/users/services"
 )
 
@@ -20,7 +21,9 @@ type Registry struct {
 }
 
 type Services struct {
-	SharedUtil commons.SharedUtil
+	SharedUtil     commons.SharedUtil
+	UserService    user_services.UserService
+	UserRepository user_repository.UserRepository
 }
 
 type Handlers struct {
@@ -31,19 +34,23 @@ type Handlers struct {
 //todo clean up, split into domains and aggregate here
 func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sync.WaitGroup) Registry {
 
+	userRepository := repository.NewUserRepoitory(db)
+
 	utils := commons.NewUtil(logger, wg)
 	movieService := services.NewMovieService(repository.NewMovieRepoitory(db))
-	userService := user_services.NewUserService(
-		repository.NewUserRepoitory(db),
-		user_services.NewPasswordService(),
-		mailer,
-	)
 
 	tokenService := user_services.NewTokenService(
 		repository.NewTokenRepository(db),
 	)
 
-	services := newServices(utils)
+	userService := user_services.NewUserService(
+		userRepository,
+		user_services.NewPasswordService(),
+		mailer,
+		tokenService,
+	)
+
+	services := newServices(utils, userService, userRepository)
 
 	movieHandler := handlers.NewMovieHandler(utils, movieService)
 	userHandler := user_handler.NewUserHandler(utils, userService, tokenService)
@@ -56,9 +63,15 @@ func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sy
 	}
 }
 
-func newServices(sharedUtil commons.SharedUtil) *Services {
+func newServices(
+	sharedUtil commons.SharedUtil,
+	userService user_services.UserService,
+	userRepository user_repository.UserRepository,
+) *Services {
 	return &Services{
-		SharedUtil: sharedUtil,
+		SharedUtil:     sharedUtil,
+		UserService:    userService,
+		UserRepository: userRepository,
 	}
 }
 

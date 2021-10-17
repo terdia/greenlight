@@ -7,6 +7,8 @@ import (
 	"github.com/terdia/greenlight/internal/validator"
 )
 
+var AnonymousUser = &User{}
+
 type User struct {
 	ID        custom_type.ID
 	CreatedAt time.Time
@@ -20,6 +22,10 @@ type User struct {
 type Password struct {
 	PlainText *string
 	Hash      []byte
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 func ValidateEmail(v *validator.Validator, email string) {

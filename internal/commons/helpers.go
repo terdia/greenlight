@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -77,7 +78,7 @@ func (util *sharedUtils) Background(fn func()) {
 
 		defer util.wg.Done()
 
-		//time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Second)
 
 		defer func() {
 			if err := recover(); err != nil {

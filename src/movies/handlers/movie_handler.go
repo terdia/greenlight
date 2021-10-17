@@ -39,10 +39,11 @@ func NewMovieHandler(util commons.SharedUtil, service services.MovieService) Mov
 // @Description create a new movie with given details
 // @Tags Movies
 // @Param body body dto.MovieRequest true "Update movie request"
+// @Param Authorization header string true "Authorization: Bearer XXSGGSSHHSSJSJSSS"
 // @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
 // @Header 200 {string} Location "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
 // @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
-// @Failure 400,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Failure 400,401,403,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
 // @Router /movies [post]
 func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request) {
 	var input dto.MovieRequest
@@ -97,8 +98,9 @@ func (handler *movieHandler) CreateMovie(rw http.ResponseWriter, r *http.Request
 // @Description show details of a given movie
 // @Tags Movies
 // @Param id path string false "Id of the movie to show"
+// @Param Authorization header string true "Authorization: Bearer XXSGGSSHHSSJSJSSS"
 // @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
-// @Failure 404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Failure 400,401,403,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
 // @Router /movies/{id} [get]
 func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) {
 
@@ -141,11 +143,12 @@ func (handler *movieHandler) ShowMovie(rw http.ResponseWriter, r *http.Request) 
 // @Tags Movies
 // @Param id path string true "Id of the movie to update"
 // @Param body body dto.MovieRequest false "Update movie request"
+// @Param Authorization header string true "Authorization: Bearer XXSGGSSHHSSJSJSSS"
 // @Success 200 {object} commons.ResponseObject{data=dto.SingleMovieResponse}
 // @Header 200 {string} Location "/v1/movies/QbPy4B7a2Lw1Kg7ogoEWj9k3NGMRVY"
 // @Failure 409 {object} commons.ResponseObject "e.g. status: error, message: unable to update the record due to an edit conflict, please try again"
 // @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
-// @Failure 400,404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Failure 400,401,403,404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
 // @Router /movies/{id} [patch]
 func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request) {
 
@@ -203,8 +206,9 @@ func (handler *movieHandler) UpdateMovie(rw http.ResponseWriter, r *http.Request
 // @Description delete a given movie by Id
 // @Tags Movies
 // @Param id path string false "Id of the movie to delete"
+// @Param Authorization header string true "Authorization: Bearer XXSGGSSHHSSJSJSSS"
 // @Success 200 {object} commons.ResponseObject
-// @Failure 404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Failure 401,403,404,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
 // @Router /movies/{id} [delete]
 func (handler *movieHandler) DeleteMovie(rw http.ResponseWriter, r *http.Request) {
 
@@ -248,9 +252,10 @@ func (handler *movieHandler) DeleteMovie(rw http.ResponseWriter, r *http.Request
 // @Param page query integer false "page number"  default(1) minimum(1) maximum(10000000)
 // @Param page_size query integer false "page size" default(10) minimum(1) maximum(100)
 // @Param sort query string false "add - to sort in descing order" Enums(id, title, year, runtime, -id, -title, -year, -runtime) default(id)
+// @Param Authorization header string true "Authorization: Bearer XXSGGSSHHSSJSJSSS"
 // @Success 200 {object} commons.ResponseObject{data=dto.ListMovieResponse}
 // @Failure 422 {object} commons.ResponseObject{data=dto.ValidationError} "status: fail"
-// @Failure 500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
+// @Failure 401,403,500 {object} commons.ResponseObject "e.g. status: error, message: the error reason"
 // @Router /movies [get]
 func (handler *movieHandler) ListMovie(rw http.ResponseWriter, r *http.Request) {
 	util := handler.sharedUtil

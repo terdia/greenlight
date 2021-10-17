@@ -28,6 +28,10 @@ type SharedUtil interface {
 	ReadCSV(qs url.Values, key string, defaultValue []string) []string
 	RateLimitExceededResponse(w http.ResponseWriter, r *http.Request)
 	Background(fn func())
+	InvalidCredentialsResponse(w http.ResponseWriter, r *http.Request)
+	InvalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request)
+	InactiveAccountResponse(w http.ResponseWriter, r *http.Request)
+	AuthenticationRequiredResponse(w http.ResponseWriter, r *http.Request)
 }
 
 type sharedUtils struct {

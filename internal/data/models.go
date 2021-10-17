@@ -5,12 +5,13 @@ import (
 )
 
 var (
-	ErrRecordNotFound     = errors.New("record not found")
-	ErrEditConflict       = errors.New("edit conflict")
+	ErrRecordNotFound     = errors.New("models: record not found")
+	ErrEditConflict       = errors.New("models: edit conflict")
 	ErrInvalidCredentials = errors.New("models: invalid credentials")
-	ErrDuplicateEmail     = errors.New("a user with this email address already exists")
+	ErrDuplicateEmail     = errors.New("models: a user with this email address already exists")
 )
 
 const (
-	TokenScopeActivation = "activation"
+	TokenScopeActivation     = "activation"
+	TokenScopeAuthentication = "authentication"
 )

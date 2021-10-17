@@ -17,6 +17,7 @@ import (
 type UserHandler interface {
 	CreateUser(rw http.ResponseWriter, r *http.Request)
 	ActivateUser(rw http.ResponseWriter, r *http.Request)
+	GetAuthenticationToken(rw http.ResponseWriter, r *http.Request)
 }
 
 type userHandler struct {

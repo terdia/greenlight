@@ -77,6 +77,13 @@ var doc = `{
                         "description": "add - to sort in descing order",
                         "name": "sort",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer XXSGGSSHHSSJSJSSS",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -92,6 +99,42 @@ var doc = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/dto.ListMovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
                                         }
                                     }
                                 }
@@ -139,6 +182,13 @@ var doc = `{
                         "schema": {
                             "$ref": "#/definitions/dto.MovieRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer XXSGGSSHHSSJSJSSS",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -167,6 +217,18 @@ var doc = `{
                         }
                     },
                     "400": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "401": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "403": {
                         "description": "e.g. status: error, message: the error reason",
                         "schema": {
                             "$ref": "#/definitions/commons.ResponseObject"
@@ -212,6 +274,13 @@ var doc = `{
                         "description": "Id of the movie to show",
                         "name": "id",
                         "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer XXSGGSSHHSSJSJSSS",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -233,7 +302,19 @@ var doc = `{
                             ]
                         }
                     },
-                    "404": {
+                    "400": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "401": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "403": {
                         "description": "e.g. status: error, message: the error reason",
                         "schema": {
                             "$ref": "#/definitions/commons.ResponseObject"
@@ -259,11 +340,30 @@ var doc = `{
                         "description": "Id of the movie to delete",
                         "name": "id",
                         "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer XXSGGSSHHSSJSJSSS",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "401": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "403": {
+                        "description": "e.g. status: error, message: the error reason",
                         "schema": {
                             "$ref": "#/definitions/commons.ResponseObject"
                         }
@@ -303,6 +403,13 @@ var doc = `{
                         "schema": {
                             "$ref": "#/definitions/dto.MovieRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer XXSGGSSHHSSJSJSSS",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -336,6 +443,18 @@ var doc = `{
                             "$ref": "#/definitions/commons.ResponseObject"
                         }
                     },
+                    "401": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "403": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
                     "404": {
                         "description": "e.g. status: error, message: the error reason",
                         "schema": {
@@ -344,6 +463,76 @@ var doc = `{
                     },
                     "409": {
                         "description": "e.g. status: error, message: unable to update the record due to an edit conflict, please try again",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    },
+                    "422": {
+                        "description": "status: fail",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ValidationError"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "e.g. status: error, message: the error reason",
+                        "schema": {
+                            "$ref": "#/definitions/commons.ResponseObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/tokens/authentication": {
+            "post": {
+                "description": "Generate a new token for a user using the given credentials",
+                "tags": [
+                    "Token"
+                ],
+                "summary": "Get user authentication token",
+                "parameters": [
+                    {
+                        "description": "auth token credentials",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/commons.ResponseObject"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "e.g. status: error, message: the error reason",
                         "schema": {
                             "$ref": "#/definitions/commons.ResponseObject"
                         }
@@ -570,6 +759,17 @@ var doc = `{
                 }
             }
         },
+        "dto.AuthTokenRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateUserRequest": {
             "type": "object",
             "properties": {
@@ -664,6 +864,25 @@ var doc = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/dto.UserResponse"
+                }
+            }
+        },
+        "dto.Token": {
+            "type": "object",
+            "properties": {
+                "expiry": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "authentication_token": {
+                    "$ref": "#/definitions/dto.Token"
                 }
             }
         },

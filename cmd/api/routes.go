@@ -18,7 +18,7 @@ func (app *application) routes() http.Handler {
 	router.NotFound(utils.NotFoundResponse)
 	router.MethodNotAllowed(utils.MethodNotAllowedResponse)
 
-	router.Use(app.recoverPanic, app.logRequest, app.rateLimit)
+	router.Use(app.recoverPanic, app.logRequest, app.rateLimit, app.authenticate)
 
 	router.Get("/v1/healthcheck", app.healthcheckHandler)
 
@@ -26,14 +26,26 @@ func (app *application) routes() http.Handler {
 	movieHandler := app.registry.Handlers.MovieHandler
 	userHandler := app.registry.Handlers.UserHandler
 
-	router.Get("/v1/movies", movieHandler.ListMovie)
-	router.Get("/v1/movies/{id}", movieHandler.ShowMovie)
-	router.Post("/v1/movies", movieHandler.CreateMovie)
-	router.Patch("/v1/movies/{id}", movieHandler.UpdateMovie)
-	router.Delete("/v1/movies/{id}", movieHandler.DeleteMovie)
+	router.Route("/v1/movies", func(r chi.Router) {
+		r.Use(app.requireActivatedUser)
 
-	router.Post("/v1/users", userHandler.CreateUser)
-	router.Put("/v1/users/activated", userHandler.ActivateUser)
+		r.Post("/", movieHandler.CreateMovie)
+		r.Get("/", movieHandler.ListMovie)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", movieHandler.ShowMovie)
+			r.Patch("/", movieHandler.UpdateMovie)  // PATCH v1/movies/xxxx
+			r.Delete("/", movieHandler.DeleteMovie) // DELETE v1/movies/xxxx
+		})
+
+	})
+
+	router.Route("/v1/users", func(r chi.Router) {
+		r.Post("/", userHandler.CreateUser)
+		r.Put("/activated", userHandler.ActivateUser)
+	})
+
+	router.Post("/v1/tokens/authentication", userHandler.GetAuthenticationToken)
 
 	// swagger API documentation UI
 	router.Get("/swagger/*", httpSwagger.Handler(

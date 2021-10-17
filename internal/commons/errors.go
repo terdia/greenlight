@@ -69,3 +69,32 @@ func (util *sharedUtils) RateLimitExceededResponse(w http.ResponseWriter, r *htt
 		Message: "rate limit exceeded",
 	})
 }
+
+func (util *sharedUtils) InvalidCredentialsResponse(w http.ResponseWriter, r *http.Request) {
+
+	util.ErrorResponse(w, r, http.StatusUnauthorized, ResponseObject{
+		StatusMsg: custom_type.Fail,
+		Message:   "invalid authentication credentials",
+	})
+}
+
+func (util *sharedUtils) InvalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("WWW-Authenticate", "Bearer")
+
+	util.ErrorResponse(w, r, http.StatusUnauthorized, ResponseObject{
+		StatusMsg: custom_type.Fail,
+		Message:   "invalid or missing token",
+	})
+}
+
+func (util *sharedUtils) AuthenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	util.ErrorResponse(w, r, http.StatusUnauthorized, ResponseObject{
+		Message: "you must be authenticated to access this resource",
+	})
+}
+
+func (util *sharedUtils) InactiveAccountResponse(w http.ResponseWriter, r *http.Request) {
+	util.ErrorResponse(w, r, http.StatusForbidden, ResponseObject{
+		Message: "your user account must be activated to access this resource",
+	})
+}

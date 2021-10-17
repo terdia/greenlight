@@ -1,13 +1,19 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
+
+	"github.com/terdia/greenlight/internal/data"
+	"github.com/terdia/greenlight/internal/validator"
+	"github.com/terdia/greenlight/src/users/entities"
 )
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {
@@ -105,4 +111,93 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 
 		next.ServeHTTP(rw, r)
 	})
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Vary", "Authorization")
+
+		authorizationHeader := r.Header.Get("Authorization")
+
+		if authorizationHeader == "" {
+			r = app.contextSetUser(r, entities.AnonymousUser)
+			next.ServeHTTP(rw, r)
+
+			return
+		}
+
+		utils := app.registry.Services.SharedUtil
+
+		parts := strings.Split(authorizationHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			utils.InvalidAuthenticationTokenResponse(rw, r)
+
+			return
+		}
+
+		token := parts[1]
+
+		v := validator.New()
+
+		v.Check(token != "", "token", "must be provided")
+		v.Check(len(token) == 26, "token", "must be 26 bytes long")
+		if !v.Valid() {
+			utils.InvalidAuthenticationTokenResponse(rw, r)
+
+			return
+		}
+
+		user, err := app.registry.Services.UserRepository.GetForToken(token, data.TokenScopeAuthentication)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				utils.InvalidAuthenticationTokenResponse(rw, r)
+			default:
+				utils.ServerErrorResponse(rw, r, err)
+			}
+
+			return
+		}
+
+		r = app.contextSetUser(r, user)
+
+		next.ServeHTTP(rw, r)
+
+	})
+}
+
+func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+
+		utils := app.registry.Services.SharedUtil
+		if user.IsAnonymous() {
+			utils.AuthenticationRequiredResponse(rw, r)
+
+			return
+		}
+
+		next.ServeHTTP(rw, r)
+	})
+}
+
+func (app *application) requireActivatedUser(next http.Handler) http.Handler {
+
+	fn := http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+
+		utils := app.registry.Services.SharedUtil
+		if !user.Activated {
+			utils.InactiveAccountResponse(rw, r)
+
+			return
+		}
+
+		next.ServeHTTP(rw, r)
+	})
+
+	// Wrap fn with the requireAuthenticatedUser() middleware before returning it.
+	return app.requireAuthenticatedUser(fn)
 }

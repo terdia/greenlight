@@ -27,6 +27,13 @@ definitions:
       token:
         type: string
     type: object
+  dto.AuthTokenRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
   dto.CreateUserRequest:
     properties:
       email:
@@ -91,6 +98,18 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.Token:
+    properties:
+      expiry:
+        type: string
+      token:
+        type: string
+    type: object
+  dto.TokenResponse:
+    properties:
+      authentication_token:
+        $ref: '#/definitions/dto.Token'
     type: object
   dto.UserResponse:
     properties:
@@ -160,6 +179,11 @@ paths:
         in: query
         name: sort
         type: string
+      - description: 'Authorization: Bearer XXSGGSSHHSSJSJSSS'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -169,6 +193,24 @@ paths:
             - properties:
                 data:
                   $ref: '#/definitions/dto.ListMovieResponse'
+              type: object
+        "401":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "403":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
               type: object
         "422":
           description: 'status: fail'
@@ -195,6 +237,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.MovieRequest'
+      - description: 'Authorization: Bearer XXSGGSSHHSSJSJSSS'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -210,6 +257,14 @@ paths:
                   $ref: '#/definitions/dto.SingleMovieResponse'
               type: object
         "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "401":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "403":
           description: 'e.g. status: error, message: the error reason'
           schema:
             $ref: '#/definitions/commons.ResponseObject'
@@ -237,9 +292,22 @@ paths:
         in: path
         name: id
         type: string
+      - description: 'Authorization: Bearer XXSGGSSHHSSJSJSSS'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "401":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "403":
+          description: 'e.g. status: error, message: the error reason'
           schema:
             $ref: '#/definitions/commons.ResponseObject'
         "404":
@@ -260,6 +328,11 @@ paths:
         in: path
         name: id
         type: string
+      - description: 'Authorization: Bearer XXSGGSSHHSSJSJSSS'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -270,7 +343,15 @@ paths:
                 data:
                   $ref: '#/definitions/dto.SingleMovieResponse'
               type: object
-        "404":
+        "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "401":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "403":
           description: 'e.g. status: error, message: the error reason'
           schema:
             $ref: '#/definitions/commons.ResponseObject'
@@ -294,6 +375,11 @@ paths:
         name: body
         schema:
           $ref: '#/definitions/dto.MovieRequest'
+      - description: 'Authorization: Bearer XXSGGSSHHSSJSJSSS'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -309,6 +395,14 @@ paths:
                   $ref: '#/definitions/dto.SingleMovieResponse'
               type: object
         "400":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "401":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "403":
           description: 'e.g. status: error, message: the error reason'
           schema:
             $ref: '#/definitions/commons.ResponseObject'
@@ -337,6 +431,46 @@ paths:
       summary: Update a given movie
       tags:
       - Movies
+  /tokens/authentication:
+    post:
+      description: Generate a new token for a user using the given credentials
+      parameters:
+      - description: auth token credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthTokenRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "401":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+        "422":
+          description: 'status: fail'
+          schema:
+            allOf:
+            - $ref: '#/definitions/commons.ResponseObject'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ValidationError'
+              type: object
+        "500":
+          description: 'e.g. status: error, message: the error reason'
+          schema:
+            $ref: '#/definitions/commons.ResponseObject'
+      summary: Get user authentication token
+      tags:
+      - Token
   /users:
     post:
       description: create a new user with given details

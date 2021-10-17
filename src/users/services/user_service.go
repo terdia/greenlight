@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/terdia/greenlight/infrastructures/dto"
 	"github.com/terdia/greenlight/internal/data"
@@ -17,16 +18,28 @@ type UserService interface {
 	Create(request dto.CreateUserRequest) (*entities.User, UserValidationErrors, error)
 	SendMail(recipient, templateFile string, data interface{}) error
 	ActivateUser(request dto.ActivateUserRequest) (*entities.User, UserValidationErrors, error)
+	CreateAuthenticationToken(request dto.AuthTokenRequest, scope string) (*entities.Token, UserValidationErrors, error)
 }
 
 type userService struct {
 	repo            repositories.UserRepository
 	passHashService PasswordHashService
 	mailer          mailer.Mailer
+	tokenService    TokenService
 }
 
-func NewUserService(repo repositories.UserRepository, passHashService PasswordHashService, mailer mailer.Mailer) UserService {
-	return &userService{repo: repo, passHashService: passHashService, mailer: mailer}
+func NewUserService(
+	repo repositories.UserRepository,
+	passHashService PasswordHashService,
+	mailer mailer.Mailer,
+	tokenService TokenService,
+) UserService {
+	return &userService{
+		repo:            repo,
+		passHashService: passHashService,
+		mailer:          mailer,
+		tokenService:    tokenService,
+	}
 }
 
 func (srv *userService) Create(request dto.CreateUserRequest) (*entities.User, UserValidationErrors, error) {
@@ -81,7 +94,7 @@ func (srv *userService) ActivateUser(request dto.ActivateUserRequest) (*entities
 
 	v := validator.New()
 
-	if validateActivateUserRequest(v, request); !v.Valid() {
+	if validateTokenRequest(v, request.TokenPlaintext); !v.Valid() {
 		return nil, v.Errors, nil
 	}
 
@@ -107,7 +120,40 @@ func (srv *userService) ActivateUser(request dto.ActivateUserRequest) (*entities
 	return user, nil, nil
 }
 
-func validateActivateUserRequest(v *validator.Validator, r dto.ActivateUserRequest) {
-	v.Check(r.TokenPlaintext != "", "token", "must be provided")
-	v.Check(len(r.TokenPlaintext) == 26, "token", "must be 26 bytes long")
+func (srv *userService) CreateAuthenticationToken(
+	request dto.AuthTokenRequest,
+	scope string,
+) (*entities.Token, UserValidationErrors, error) {
+
+	v := validator.New()
+
+	entities.ValidateEmail(v, request.Email)
+	entities.ValidatePasswordPlaintext(v, request.Password)
+
+	if !v.Valid() {
+		return nil, v.Errors, nil
+	}
+
+	user, err := srv.repo.GetByEmail(request.Email)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	matchPassword, err := srv.passHashService.Verify(user.Password.Hash, request.Password)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !matchPassword {
+		return nil, nil, data.ErrInvalidCredentials
+	}
+
+	token, err := srv.tokenService.CreateNew(user.ID, 24*time.Hour, data.TokenScopeAuthentication)
+
+	return token, nil, err
+}
+
+func validateTokenRequest(v *validator.Validator, plainText string) {
+	v.Check(plainText != "", "token", "must be provided")
+	v.Check(len(plainText) == 26, "token", "must be 26 bytes long")
 }
