@@ -27,15 +27,14 @@ func (app *application) routes() http.Handler {
 	userHandler := app.registry.Handlers.UserHandler
 
 	router.Route("/v1/movies", func(r chi.Router) {
-		r.Use(app.requireActivatedUser)
 
-		r.Post("/", movieHandler.CreateMovie)
-		r.Get("/", movieHandler.ListMovie)
+		r.Post("/", app.requirePermission("movies:write", movieHandler.CreateMovie))
+		r.Get("/", app.requirePermission("movies:read", movieHandler.ListMovie))
 
 		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", movieHandler.ShowMovie)
-			r.Patch("/", movieHandler.UpdateMovie)  // PATCH v1/movies/xxxx
-			r.Delete("/", movieHandler.DeleteMovie) // DELETE v1/movies/xxxx
+			r.Get("/", app.requirePermission("movies:read", movieHandler.ShowMovie))
+			r.Patch("/", app.requirePermission("movies:write", movieHandler.UpdateMovie))  // PATCH v1/movies/xxxx
+			r.Delete("/", app.requirePermission("movies:write", movieHandler.DeleteMovie)) // DELETE v1/movies/xxxx
 		})
 
 	})

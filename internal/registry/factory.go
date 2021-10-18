@@ -21,9 +21,10 @@ type Registry struct {
 }
 
 type Services struct {
-	SharedUtil     commons.SharedUtil
-	UserService    user_services.UserService
-	UserRepository user_repository.UserRepository
+	SharedUtil           commons.SharedUtil
+	UserService          user_services.UserService
+	UserRepository       user_repository.UserRepository
+	PermissionRepository user_repository.PermissionRepository
 }
 
 type Handlers struct {
@@ -35,6 +36,7 @@ type Handlers struct {
 func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sync.WaitGroup) Registry {
 
 	userRepository := repository.NewUserRepoitory(db)
+	permissionRepository := repository.NewPermissionRepository(db)
 
 	utils := commons.NewUtil(logger, wg)
 	movieService := services.NewMovieService(repository.NewMovieRepoitory(db))
@@ -50,10 +52,10 @@ func NewRegistry(db *sql.DB, logger *logger.Logger, mailer mailer.Mailer, wg *sy
 		tokenService,
 	)
 
-	services := newServices(utils, userService, userRepository)
+	services := newServices(utils, userService, userRepository, permissionRepository)
 
 	movieHandler := handlers.NewMovieHandler(utils, movieService)
-	userHandler := user_handler.NewUserHandler(utils, userService, tokenService)
+	userHandler := user_handler.NewUserHandler(utils, userService, tokenService, permissionRepository)
 
 	handlers := newHandlers(movieHandler, userHandler)
 
@@ -67,15 +69,20 @@ func newServices(
 	sharedUtil commons.SharedUtil,
 	userService user_services.UserService,
 	userRepository user_repository.UserRepository,
+	permissionRepository user_repository.PermissionRepository,
 ) *Services {
 	return &Services{
-		SharedUtil:     sharedUtil,
-		UserService:    userService,
-		UserRepository: userRepository,
+		SharedUtil:           sharedUtil,
+		UserService:          userService,
+		UserRepository:       userRepository,
+		PermissionRepository: permissionRepository,
 	}
 }
 
-func newHandlers(movieHandler handlers.MovieHandle, userHandler user_handler.UserHandler) *Handlers {
+func newHandlers(
+	movieHandler handlers.MovieHandle,
+	userHandler user_handler.UserHandler,
+) *Handlers {
 	return &Handlers{
 		MovieHandler: movieHandler,
 		UserHandler:  userHandler,

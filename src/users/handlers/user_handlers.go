@@ -11,6 +11,7 @@ import (
 	"github.com/terdia/greenlight/internal/custom_type"
 	"github.com/terdia/greenlight/internal/data"
 	"github.com/terdia/greenlight/src/users/entities"
+	"github.com/terdia/greenlight/src/users/repositories"
 	"github.com/terdia/greenlight/src/users/services"
 )
 
@@ -21,17 +22,24 @@ type UserHandler interface {
 }
 
 type userHandler struct {
-	sharedUtil   commons.SharedUtil
-	service      services.UserService
-	tokenService services.TokenService
+	sharedUtil           commons.SharedUtil
+	service              services.UserService
+	tokenService         services.TokenService
+	permissionRepository repositories.PermissionRepository
 }
 
 func NewUserHandler(
 	utils commons.SharedUtil,
 	srv services.UserService,
 	tokenService services.TokenService,
+	permissionRepository repositories.PermissionRepository,
 ) UserHandler {
-	return &userHandler{sharedUtil: utils, service: srv, tokenService: tokenService}
+	return &userHandler{
+		sharedUtil:           utils,
+		service:              srv,
+		tokenService:         tokenService,
+		permissionRepository: permissionRepository,
+	}
 }
 
 // CreateUser ... Create user
@@ -63,6 +71,13 @@ func (handler *userHandler) CreateUser(rw http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if err != nil {
+		utils.ServerErrorResponse(rw, r, err)
+
+		return
+	}
+
+	err = handler.permissionRepository.AddForUser(user.ID, "movies:read")
 	if err != nil {
 		utils.ServerErrorResponse(rw, r, err)
 

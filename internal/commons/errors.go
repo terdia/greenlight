@@ -98,3 +98,9 @@ func (util *sharedUtils) InactiveAccountResponse(w http.ResponseWriter, r *http.
 		Message: "your user account must be activated to access this resource",
 	})
 }
+
+func (util *sharedUtils) NotPermittedRResponse(w http.ResponseWriter, r *http.Request) {
+	util.ErrorResponse(w, r, http.StatusForbidden, ResponseObject{
+		Message: "your user account doesn't have the necessary permissions to perform this operation",
+	})
+}

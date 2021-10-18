@@ -32,6 +32,7 @@ type SharedUtil interface {
 	InvalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request)
 	InactiveAccountResponse(w http.ResponseWriter, r *http.Request)
 	AuthenticationRequiredResponse(w http.ResponseWriter, r *http.Request)
+	NotPermittedRResponse(w http.ResponseWriter, r *http.Request)
 }
 
 type sharedUtils struct {

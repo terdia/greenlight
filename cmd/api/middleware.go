@@ -167,7 +167,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler {
+func (app *application) requireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
@@ -183,7 +183,7 @@ func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler
 	})
 }
 
-func (app *application) requireActivatedUser(next http.Handler) http.Handler {
+func (app *application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
 
 	fn := http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
@@ -200,4 +200,30 @@ func (app *application) requireActivatedUser(next http.Handler) http.Handler {
 
 	// Wrap fn with the requireAuthenticatedUser() middleware before returning it.
 	return app.requireAuthenticatedUser(fn)
+}
+
+func (app *application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc {
+
+	fn := func(rw http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+
+		utils := app.registry.Services.SharedUtil
+		permissions, err := app.registry.Services.PermissionRepository.GetAllForUser(user.ID)
+
+		if err != nil {
+			utils.ServerErrorResponse(rw, r, err)
+
+			return
+		}
+
+		if !permissions.Includes(code) {
+			utils.NotPermittedRResponse(rw, r)
+
+			return
+		}
+
+		next.ServeHTTP(rw, r)
+	}
+
+	return app.requireActivatedUser(fn)
 }
