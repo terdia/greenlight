@@ -18,7 +18,7 @@ func (app *application) routes() http.Handler {
 	router.NotFound(utils.NotFoundResponse)
 	router.MethodNotAllowed(utils.MethodNotAllowedResponse)
 
-	router.Use(app.recoverPanic, app.logRequest, app.rateLimit, app.authenticate)
+	router.Use(app.recoverPanic, app.logRequest, app.enableCors, app.rateLimit, app.authenticate)
 
 	router.Get("/v1/healthcheck", app.healthcheckHandler)
 

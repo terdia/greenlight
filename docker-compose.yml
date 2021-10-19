@@ -21,6 +21,7 @@ services:
         MAIL_USERNAME: ${MAIL_USERNAME}
         MAIL_PASSOWRD: ${MAIL_PASSOWRD}
         MAIL_SENDER: ${MAIL_SENDER}
+        CORS_ALLOWED: ${CORS_ALLOWED}
 
   # migrate:
   #     image: migrate/migrate
@@ -30,7 +31,7 @@ services:
   #         - terdia-proxy
   #     volumes:
   #         - ./migrations:/migrations
-  #     command: -path=/migrations/ -database "postgres://greenlight:password@postgres/greenlight?sslmode=disable" up 2
+  #     command: -path=/migrations/ -database "postgres://greenlight:password@postgres/greenlight?sslmode=disable" up
 
 networks: 
     terdia-proxy:

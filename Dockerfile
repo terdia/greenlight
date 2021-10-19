@@ -1,7 +1,4 @@
 FROM golang:1.17-alpine as builder
-
-RUN apk add --update curl && \
-    rm -rf /var/cache/apk/*
     
 WORKDIR /go/src/greenlight
 
@@ -15,4 +12,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/api -x /go/src/greenlight/cmd/a
 
 EXPOSE 4000
 
-CMD ["/go/bin/api"]
+COPY entrypoint.sh ./entrypoint.sh
+
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
