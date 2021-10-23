@@ -12,6 +12,7 @@ require (
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/swaggo/http-swagger v1.1.1
 	github.com/swaggo/swag v1.7.3
+	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 )
