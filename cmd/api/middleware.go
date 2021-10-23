@@ -2,13 +2,16 @@ package main
 
 import (
 	"errors"
+	"expvar"
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/felixge/httpsnoop"
 	"golang.org/x/time/rate"
 
 	"github.com/terdia/greenlight/internal/data"
@@ -232,6 +235,7 @@ func (app *application) enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 
 		rw.Header().Set("Vary", "Origin")
+		rw.Header().Add("Vary", "Access-Control-Request-Method")
 
 		origin := r.Header.Get("Origin")
 
@@ -239,6 +243,16 @@ func (app *application) enableCors(next http.Handler) http.Handler {
 			for i := range app.config.Cors.TrustedOrigins {
 				if origin == app.config.Cors.TrustedOrigins[i] {
 					rw.Header().Set("Access-Control-Allow-Origin", origin)
+
+					// handle prefight
+					if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+						rw.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
+						rw.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+
+						rw.WriteHeader(http.StatusOK)
+						return
+					}
+
 					break
 				}
 			}
@@ -246,4 +260,31 @@ func (app *application) enableCors(next http.Handler) http.Handler {
 
 		next.ServeHTTP(rw, r)
 	})
+}
+
+func (app *application) metrics(next http.Handler) http.Handler {
+
+	// run only one
+	totalRequestRecieved := expvar.NewInt("total_request_received")
+	totalResponseSent := expvar.NewInt("total_response_sent")
+	totalProcessingTimeMicroseconds := expvar.NewInt("total_processing_time_μs")
+	totalResponsesSentByStatus := expvar.NewMap("total_responses_sent_by_status")
+
+	// run for every request
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		//start := time.Now()
+
+		totalRequestRecieved.Add(1)
+
+		metrics := httpsnoop.CaptureMetrics(next, rw, r)
+
+		totalResponseSent.Add(1)
+
+		//duration := time.Since(start).Microseconds()
+		totalProcessingTimeMicroseconds.Add(metrics.Duration.Microseconds())
+
+		//convert the status code (which is an integer) to a string using strconv.Itoa()
+		totalResponsesSentByStatus.Add(strconv.Itoa(metrics.Code), 1)
+	})
+
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"expvar"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -18,7 +19,7 @@ func (app *application) routes() http.Handler {
 	router.NotFound(utils.NotFoundResponse)
 	router.MethodNotAllowed(utils.MethodNotAllowedResponse)
 
-	router.Use(app.recoverPanic, app.logRequest, app.enableCors, app.rateLimit, app.authenticate)
+	router.Use(app.metrics, app.recoverPanic, app.logRequest, app.enableCors, app.rateLimit, app.authenticate)
 
 	router.Get("/v1/healthcheck", app.healthcheckHandler)
 
@@ -45,6 +46,9 @@ func (app *application) routes() http.Handler {
 	})
 
 	router.Post("/v1/tokens/authentication", userHandler.GetAuthenticationToken)
+
+	//router.Get("/debug/vars", app.requirePermission("movies:read", expvar.Handler().ServeHTTP))
+	router.Get("/debug/vars", expvar.Handler().ServeHTTP)
 
 	// swagger API documentation UI
 	router.Get("/swagger/*", httpSwagger.Handler(

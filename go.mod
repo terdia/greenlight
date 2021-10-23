@@ -7,6 +7,7 @@ require github.com/go-chi/chi/v5 v5.0.4
 require github.com/lib/pq v1.10.2
 
 require (
+	github.com/felixge/httpsnoop v1.0.2
 	github.com/go-mail/mail/v2 v2.3.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/swaggo/http-swagger v1.1.1

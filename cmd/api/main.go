@@ -1,8 +1,11 @@
 package main
 
 import (
+	"expvar"
 	"os"
+	"runtime"
 	"sync"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -40,6 +43,20 @@ func main() {
 	mailer := mailer.New(cfg.Smtp)
 
 	wg := new(sync.WaitGroup)
+
+	expvar.NewString("appVersion").Set(cfg.Version)
+
+	expvar.Publish("goroutines", expvar.Func(func() interface{} {
+		return runtime.NumGoroutine()
+	}))
+
+	expvar.Publish("database", expvar.Func(func() interface{} {
+		return db.Stats()
+	}))
+
+	expvar.Publish("timestamp", expvar.Func(func() interface{} {
+		return time.Now().Unix()
+	}))
 
 	app := &application{
 		config:   cfg,
