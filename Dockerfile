@@ -8,7 +8,7 @@ RUN go get gotest.tools/gotestsum
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/api -x /go/src/greenlight/cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags='-s' -o /go/bin/api -x /go/src/greenlight/cmd/api
 
 EXPOSE 4000
 
