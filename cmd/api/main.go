@@ -39,6 +39,7 @@ type application struct {
 func main() {
 
 	cfg := new(config.Config)
+	cfg.Version = version
 
 	flag.IntVar(&cfg.AppPort, "port", 4000, "Api server")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
